@@ -1,22 +1,27 @@
 import read
 import pylab
 
-key = (0.0,1000)
+#even though the key is encoded as (redshift, snapshot) we only want to give the snapshot number in calling the key
+#we also want to be able to edit the snapshot number in the main file and not a graphing file - so eventually this will become a dummy variable
+snapshot = 1000
+
+for i in read.halo_data.keys():
+    if i[1] == snapshot:
+        key = i
+    else:
+        print("error: snapshot does not exist")
 data = read.halo_data[key]
 
+'''
+#gets the coords
 xcoord = [i[0] for i in data]
 ycoord = [i[1] for i in data]
 zcoord = [i[2] for i in data]
+'''
 
-#checking that the halos are within the simulation
-print(max(xcoord), max(ycoord), max(zcoord))
-#looks good so far
-
-#black holes histogram doesn't work currently, we need to filter out the -infinities, but filter is returning true or false... 
+#fixed black holes histgram, I'm stupid.
 dm = [i[4] for i in data]
-bh = [i[5] != float("-inf") for i in data]
-print(bh)
-print(dm)
+bh = [i[5] for i in data if i[5] != float("-inf")]
 
 pylab.hist(bh, bins = 100)
 pylab.show()
@@ -24,4 +29,4 @@ pylab.show()
 pylab.hist(dm, bins = 100)
 pylab.show()
 
-#pdb library
+#have a look at pdb library
