@@ -19,7 +19,6 @@ ycoord = [i[1] for i in data]
 zcoord = [i[2] for i in data]
 '''
 
-#fixed black holes histgram, I'm stupid.
 dm = [i[4] for i in data]
 bh = [i[5] for i in data if i[5] != float("-inf")]
 
