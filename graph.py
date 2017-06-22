@@ -1,16 +1,12 @@
 import read
+from init import *
 import pylab
+import snapshot
 
-#even though the key is encoded as (redshift, snapshot) we only want to give the snapshot number in calling the key
-#we also want to be able to edit the snapshot number in the main file and not a graphing file - so eventually this will become a dummy variable
-snapshot = 1000
+#this file is entirely broken
+#jk I fixed it, but I don't want this file lol and it will be gone soon
 
-for i in read.halo_data.keys():
-    if i[1] == snapshot:
-        key = i
-    else:
-        print("error: snapshot does not exist")
-data = read.halo_data[key]
+data = snapshot.data
 
 '''
 #gets the coords

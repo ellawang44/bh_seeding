@@ -24,3 +24,4 @@ for line in f:
         halo_data[current_key].append(data)
     else:
         print("error: unexpected line in input file under (redshift, snapshot):" ++ str(current_key))
+        quit()
