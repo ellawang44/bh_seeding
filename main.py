@@ -1,7 +1,7 @@
-import m_bh
+import objects
 import pylab
 
-pylab.plot(m_bh.data[0], m_bh.data[1])
+pylab.plot(objects.data[0], objects.data[1])
 pylab.xlabel("redshift")
 pylab.ylabel("number")
 pylab.show()

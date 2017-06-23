@@ -4,8 +4,6 @@ from collections import defaultdict
 f = open("data/halo_data.dat","r")
 next(f)
 
-# creates empty dictionary
-halo_data = {}
 # stores the current key so we can update the entry in the for-loop
 current_key = ("redshift", "snapshot number")
 
@@ -23,5 +21,4 @@ for line in f:
         # append new data to existing value in key
         halo_data[current_key].append(data)
     else:
-        print("error: unexpected line in input file under (redshift, snapshot):" ++ str(current_key))
-        quit()
+        raise ValueError("unexpected line in input file under (redshift, snapshot):" + str(current_key))

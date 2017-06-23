@@ -1,11 +1,11 @@
 import read
 from init import snapshot
 
-#returns the data in the given snapshot
-
 key = "initial key"
 
-if snapshot == None:
+# matches snapshot to key in dictionary
+
+if snapshot is None:
     data = None
 else:
     for i in read.halo_data.keys():
@@ -14,8 +14,9 @@ else:
         else:
             pass
 
+#retrieves data stored in the key
+
 if key == "initial key":
-    print("error: snapshot does not exist")
-    quit()
+    raise ValueError("snapshot does not exist")
 else:
     data = read.halo_data[key]

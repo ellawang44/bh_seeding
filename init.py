@@ -1,12 +1,12 @@
-# want to plot what
+# initial values
 snapshot = 1000
 redshift = 9
 M_stellar = None
-M_dm = None
-M_bh = 5
+M_dm = 100
+M_bh = None
 x_coord = None
 y_coord = None
 z_coord = None
 
-# I need to give this a better name
-init = 1
+# radius around given mass
+r = 1
