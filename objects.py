@@ -6,15 +6,15 @@ from init import r, M_stellar, M_dm, M_bh
 if M_stellar is not None:
     var = 3
     obj = M_stellar
-    err = "stars"
+    err = 'stars'
 elif M_dm is not None:
     var = 4
     obj = M_dm
-    err = "dark matter haloes"
+    err = 'dark matter haloes'
 elif M_bh is not None:
     var = 5
     obj = M_bh
-    err = "black holes"
+    err = 'black holes'
 else:
     var = None
 
@@ -31,13 +31,9 @@ else:
         for i in value:
             if obj - r < i[var] < obj + r:
                 counts += 1
-            else:
-                pass
         # build a tuple of the redshift and number if there is more than 0 objects that satisfy the mass range
         if counts != 0:
             objects.append((current_redshift, counts))
-        else:
-            pass
     # if there are objects that satisfy the given mass range
     # gets the data ready for plotting
     if objects != []:
@@ -49,4 +45,4 @@ else:
             num.append(i[1])
         data = (redshift, num)
     else:
-        raise ValueError("no " + err + " found within mass range " + str(obj - r) + " to " + str(obj + r))
+        raise ValueError('no ' + err + ' found within mass range ' + str(obj - r) + ' to ' + str(obj + r))

@@ -12,12 +12,10 @@ else:
     lower, upper = (0, None), (numpy.inf, None)
     # gets the two redshifts closest to the input redshift
     for i in keys:
-        if i[0] < redshift and i[0] > lower[0]:
+        if lower[0] < i[0] < redshift:
             lower = i
-        elif i[0] > redshift and i[0] < upper[0]:
+        elif redshift < i[0] < upper[0]:
             upper = i
-        else:
-            pass
         # compares the two redshifts and returns the closest
         if lower[0] - redshift < upper[0] - redshift:
             key = lower
