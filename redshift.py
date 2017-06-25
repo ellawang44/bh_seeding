@@ -1,11 +1,12 @@
 import read
 import numpy
-from init import redshift
+import init
 
 #returns the data for the redshift closest to the one given
 
 data = None
 def retrieve():
+    redshift = init.redshift
     if redshift is None:
         data = None
     else:

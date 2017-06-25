@@ -1,11 +1,15 @@
 import read
-from init import r, M_stellar, M_dm, M_bh
+import init
 
 # decides what data to retrieve depending on input
 
 data = None
 def retrieve():
     global data
+    r = init.r
+    M_stellar = init.M_stellar
+    M_dm = init.M_dm
+    M_bh = init.M_bh
     if M_stellar is not None:
         var = 3
         obj = M_stellar

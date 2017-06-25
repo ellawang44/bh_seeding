@@ -1,5 +1,5 @@
 import read
-from init import snapshot
+import snapshot
 
 key = 'initial key'
 data = None
@@ -7,6 +7,7 @@ data = None
 # matches snapshot to key in dictionary
 
 def retrieve():
+    snapshot = init.snapshot
     if snapshot is None:
         data = None
     else:
