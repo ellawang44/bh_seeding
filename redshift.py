@@ -5,11 +5,11 @@ import init
 #returns the data for the redshift closest to the one given
 
 data = None
+
 def retrieve():
+    global data
     redshift = init.redshift
-    if redshift is None:
-        data = None
-    else:
+    if redshift is not None:
         keys = read.halo_data.keys()
         # set initial redshifts
         lower, upper = (0, None), (numpy.inf, None)

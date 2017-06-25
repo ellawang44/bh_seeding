@@ -1,5 +1,5 @@
 import read
-import snapshot
+import init
 
 key = 'initial key'
 data = None
@@ -7,10 +7,9 @@ data = None
 # matches snapshot to key in dictionary
 
 def retrieve():
+    global data
     snapshot = init.snapshot
-    if snapshot is None:
-        data = None
-    else:
+    if snapshot is not None:
         for i in read.halo_data.keys():
             if i[1] == snapshot:
                 key = i
