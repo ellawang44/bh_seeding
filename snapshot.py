@@ -10,7 +10,7 @@ def retrieve():
     global data
     snapshot = init.snapshot
     if snapshot is not None:
-        for i in read.halo_data.keys():
+        for i in read.list_of_keys:
             if i[1] == snapshot:
                 key = i
 
@@ -19,4 +19,4 @@ def retrieve():
     if key == 'initial key':
         raise ValueError('snapshot does not exist')
     else:
-        data = read.halo_data[key]
+        data = read.galaxy_data[key]

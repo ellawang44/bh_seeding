@@ -11,15 +11,15 @@ def retrieve():
     M_bh = init.M_bh
     r = init.r
     if M_stellar is not None:
-        var = 3
+        var = 6
         obj = M_stellar
         err = 'stars'
     elif M_dm is not None:
-        var = 4
+        var = 7
         obj = M_dm
         err = 'dark matter haloes'
     elif M_bh is not None:
-        var = 5
+        var = 8
         obj = M_bh
         err = 'black holes'
     else:
@@ -28,7 +28,7 @@ def retrieve():
         # takes the redshifts for the chosen object
     if var is not None:
         objects = []
-        for key, value in read.halo_data.items():
+        for key, value in read.galaxy_data.items():
             current_redshift = key[0]
             counts = 0
             # gets the number of objects that satisfy the given mass range
