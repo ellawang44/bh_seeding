@@ -10,3 +10,5 @@ z_coord = None
 
 # range around given mass (can't name it range because range is already a keyword in python)
 r = 1
+
+item = 'redshift'

@@ -7,7 +7,7 @@ tree = open('data/tree_data.dat','r')
 next(tree)
 
 # name tuple so we can refer to each bit of data by name instead of indexing
-naming_data = namedtuple('galaxy_data', ['xcoord', 'ycoord', 'zcoord', 'stellar_mass', 'dark_matter_mass', 'black_hole_mass', 'current', 'next', 'previous'])
+naming_data = namedtuple('galaxy_data', ['current', 'next', 'previous', 'xcoord', 'ycoord', 'zcoord', 'stellar_mass', 'dark_matter_mass', 'black_hole_mass'])
 
 # stores the current key so we can update the entry in the for-loop
 current_key = ('redshift', 'snapshot number')
