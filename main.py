@@ -93,6 +93,8 @@ if __name__ == '__main__':
         pylab.show()
 
     # graph for tracing the mass of an object in a galaxy
+    if options.txt:
+        init.print_file = True
     if options.object:
         init.item = options.object
         if options.stellar:

@@ -12,3 +12,4 @@ z_coord = None
 r = 1
 
 item = 'redshift'
+print_file = False
