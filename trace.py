@@ -26,7 +26,7 @@ def retrieve():
 
     # orint file containing snapshots and galaxy numbers
     if init.print_file == True:
-        f = open(init.item + ' for ' + str(err) + ' of mass ' + str(int(obj)) + '.txt', 'w')
+        f = open(str(err) + ' of mass ' + str(int(obj)) + '.txt', 'w')
         f.write('snapshot \t galaxy number \n')
 
     for i in range(0, len(keys) - 1):
@@ -39,7 +39,7 @@ def retrieve():
             elif init.item == 'black hole':
                 item = galaxy[8]
             else:
-                item = key[i][0]
+                item = keys[i][0]
             for prev_galaxy in read.galaxy_data[keys[i+1]]:
                 # 1. check that the previous galaxy is below the threshold mass - if it isn't, it already isn't what we're looking for
                 # 2. find the pre-image of the galaxy that you want
