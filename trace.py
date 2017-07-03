@@ -34,45 +34,50 @@ def retrieve():
     # not generalised to pull out everything yet, only pulls out black hole information, sorry
     if var == 7:
         for pres_galaxy in read.galaxy_data[keys[0]]:
-            # need galaxy to have mass above the specified mass, or else there's no real point in going through it, we can just eliminate it
-            if pres_galaxy[7] > obj:
-                # initiate all the variables needed to trace a particular galaxy
-                f = None
-                current_key = keys[1]
-                galaxies = [prev_galaxy for prev_galaxy in read.galaxy_data[current_key] if prev_galaxy[1] == pres_galaxy[0]]
+            # initiate all the variables needed to trace a particular galaxy
+            f = None
+            current_key = keys[1]
             # get the previous set of galaxies, 1 snapshot earlier than the current
-            for galaxy in galaxies:
-                # update the current key
-                current_key = keys[keys.index(current_key) + 1]
-                for prev_galaxy in read.galaxy_data[current_key]:
-                    # find the right galaxy to trace
-                    if galaxy[0] == prev_galaxy[1]:
-                        if f is None and galaxy[7] > obj and obj > prev_galaxy[7]:
-                                # need to set new things
-                                # regret updating current_key?
-                                f = keys[keys.index(current_key) - 1]
-                                a = list(f)
-                                a.append(list(galaxy))
-                                b = list(current_key)
-                                b.append(list(prev_galaxy))
-                                # initiate list, list contains tuples with current_key and galaxy number
-                                l_keys = [tuple(a), tuple(b)]
-                        if f is not None:
-                            c = list(current_key)
-                            c.append(list(prev_galaxy))
-                            l_keys.append(tuple(c))
-                            if galaxy[7] > obj > prev_galaxy[7]:
-                                # update last key
-                                l = tuple(c)
-                # take the list till last, might have off by 1 error, check
-                galaxy_range = l_keys[:l_keys.index(l)]
-                # we'll floor it for now, can change it in the future, but Phil said it didn't matter, we'll see how un-lazy I am then, is that even a word?
-                # needs better name, might have off by 1 error, check
-                app = galaxy_range[len(galaxy_range) // 2]
-                print(app[2][8])
-                objects.append(app[2][8])
-                if init.print_file == True:
-                    f.write(str(app[1]) + '\t' + str(app[2]))
+            galaxies = [prev_galaxy for prev_galaxy in read.galaxy_data[current_key] if prev_galaxy[1] == pres_galaxy[0]]
+            # newly created galaxy at present day
+            if len(galaxies) == 0:
+                if galaxies[0][7] > obj:
+                    objects.append(galaxies[8])
+            elif len(galaxies) == 1:
+                for galaxy in galaxies:
+                    # update the current key
+                    current_key = keys[keys.index(current_key) + 1]
+                    for prev_galaxy in read.galaxy_data[current_key]:
+                        # find the right galaxy to trace
+                        if galaxy[0] == prev_galaxy[1]:
+                            if f is None and galaxy[7] > obj and obj > prev_galaxy[7]:
+                                    # need to set new things
+                                    # regret updating current_key?
+                                    f = keys[keys.index(current_key) - 1]
+                                    a = list(f)
+                                    a.append(list(galaxy))
+                                    b = list(current_key)
+                                    b.append(list(prev_galaxy))
+                                    # initiate list, list contains tuples with current_key and galaxy number
+                                    l_keys = [tuple(a), tuple(b)]
+                            if f is not None:
+                                c = list(current_key)
+                                c.append(list(prev_galaxy))
+                                l_keys.append(tuple(c))
+                                if galaxy[7] > obj > prev_galaxy[7]:
+                                    # update last key
+                                    l = tuple(c)
+                    # take the list till last, might have off by 1 error, check
+                    galaxy_range = l_keys[:l_keys.index(l)]
+                    # we'll floor it for now, can change it in the future, but Phil said it didn't matter, we'll see how un-lazy I am then, is that even a word?
+                    # needs better name, might have off by 1 error, check
+                    app = galaxy_range[len(galaxy_range) // 2]
+                    print(app[2][8]) # this is for debugging only, remove later
+                    objects.append(app[2][8])
+                    if init.print_file == True:
+                        f.write(str(app[1]) + '\t' + str(app[2][0]))
+            else:
+                # uhh if we have more than 1 galaxy what do? :(
 
     for i in range(0, len(keys) - 1):
         for galaxy in read.galaxy_data[keys[i]]:
@@ -93,6 +98,11 @@ def retrieve():
                     objects.append(item)
                     if init.print_file == True:
                         f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
+
+    # gotta close the file so Probie's computer (and Windows) doesn't get annoyed
+    if init.print_file == 'True':
+        f.close()
+
     if objects != []:
         data = objects
     else:
