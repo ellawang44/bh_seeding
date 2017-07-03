@@ -116,6 +116,6 @@ if __name__ == '__main__':
         data = [i for i in data if i != float('-inf')]
         pylab.hist(data, bins = binnum)
         pylab.title(title)
-        pylab.xlabel(options.object + ' mass')
+        pylab.xlabel(options.object)
         pylab.ylabel('number')
         pylab.show()

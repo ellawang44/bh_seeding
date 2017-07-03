@@ -2,8 +2,9 @@ from collections import defaultdict, namedtuple
 
 # reads in the data
 halo = open('data/halo_data.dat','r')
-next(halo)
 tree = open('data/tree_data.dat','r')
+# skip the first line of the file, the name of the columns
+next(halo)
 next(tree)
 
 # name tuple so we can refer to each bit of data by name instead of indexing
@@ -13,7 +14,7 @@ naming_data = namedtuple('galaxy_data', ['current', 'next', 'previous', 'xcoord'
 current_key = ('redshift', 'snapshot number')
 list_of_keys = []
 
-#if the key does not exist, create key and set value to []
+# if the key does not exist, create key and set value to []
 galaxy_data = defaultdict(lambda: [])
 
 # builds dictionary
