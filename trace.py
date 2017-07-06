@@ -33,8 +33,8 @@ def retrieve():
 
     # if black hole mass, then it is monotomically increasing, and we can do what we did before.
     if var == 8:
-        for key in keys:
-            for galaxy in read.galaxy_data[key]:
+        for i in range(0, len(keys) - 1):
+            for galaxy in read.galaxy_data[keys[i]]:
                 # decide what item to obtain histogram data for
                 if init.item == 'stellar':
                     item = galaxy[6]
@@ -56,7 +56,7 @@ def retrieve():
                             f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
     else:
         for galaxy in read.galaxy_data[keys[0]]:
-            frame = (midpoint.midpoint(keys[0], galaxy, var, obj))
+            frame = (midpoint.midpoint(keys[0], galaxy, obj, var))
             if frame is not None:
                 if init.item == 'stellar':
                     objects.append(frame[1][6])

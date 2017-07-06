@@ -44,6 +44,7 @@ def region(key, galaxy, threshold, var):
             if first is None:
                 if prev_galaxy[var] < threshold < current_galaxy[var]:
                     first = (current_key, current_galaxy)
+                    last = (keys[keys.index(current_key) + 1], prev_galaxy)
                     galaxy_list.append((current_key, current_galaxy))
             else:
                 galaxy_list.append((current_key, current_galaxy))
@@ -57,15 +58,15 @@ def region(key, galaxy, threshold, var):
         region = galaxy_list[:(galaxy_list.index(last)+1)]
         return region
 
-def midpoint(key, galaxy, var, threshold):
+def midpoint(key, galaxy, threshold, var):
     # takes the mid point of the section of the list that crosses the threshold
-    galaxy_range = region(key, galaxy, var, threshold)
+    galaxy_range = region(key, galaxy, threshold, var)
     if galaxy_range is None:
         return None
     else:
         mid = len(galaxy_range) / 2
         if not mid.is_integer():
-             return galaxy_range[floor(mid)]
+             return galaxy_range[int(mid)]
         else:
             # return the snapshot with the redshift closest to the center
             lower = galaxy_range[int(mid)-1]
