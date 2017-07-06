@@ -36,22 +36,7 @@ def retrieve():
         for key in keys:
             for galaxy in read.galaxy_data[key]:
                 prev_galaxy = midpoint.m_preimage(key, galaxy)
-                if prev_galaxy is not None:
-                    if prev_galaxy[var] < obj < galaxy[var]:
-                        if init.item == 'stellar':
-                            objects.append(galaxy[6])
-                        elif init.item == 'dark matter':
-                            objects.append(galaxy[7])
-                        elif init.item == 'black hole':
-                            objects.append(galaxy[8])
-                        else:
-                            objects.append(key[0])
-                        if init.print_file:
-                            f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
-        '''
-        for i in range(0, len(keys) - 1):
-            for galaxy in read.galaxy_data[keys[i]]:
-                # decide what item to obtain histogram data for
+                # decide what to append
                 if init.item == 'stellar':
                     item = galaxy[6]
                 elif init.item == 'dark matter':
@@ -59,18 +44,16 @@ def retrieve():
                 elif init.item == 'black hole':
                     item = galaxy[8]
                 else:
-                    item = keys[i][0]
-                for prev_galaxy in read.galaxy_data[keys[i+1]]:
-                    # 1. check that the previous galaxy is below the threshold mass - if it isn't, it already isn't what we're looking for
-                    # 2. find the pre-image of the galaxy that you want
-                    # 3. check that it has just passed the threshold mass
-                    # 1 and 3 can be done together, but this makes the code run slightly faster (I think)
-                    # plz fix, it currently adds 2 blackholes if a merger pushes it over the threshold
-                    if prev_galaxy[var] < obj and galaxy[2] == prev_galaxy[0] and galaxy[var] > obj:
-                        objects.append(item)
-                        if init.print_file:
-                            f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
-                            '''
+                    item = key[0]
+                # if there was nothing in the previous snapshot, then we assume the mass was 0
+                if prev_galaxy is None and galaxy[var] > obj:
+                    objects.append(item)
+                    if init.print_file:
+                        f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
+                elif prev_galaxy is not None and prev_galaxy[var] < obj < galaxy[var]:
+                    objects.append(item)
+                    if init.print_file:
+                        f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
     else:
         for galaxy in read.galaxy_data[keys[0]]:
             frame = (midpoint.midpoint(keys[0], galaxy, obj, var))
