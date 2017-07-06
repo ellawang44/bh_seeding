@@ -31,8 +31,24 @@ def retrieve():
         f = open(str(err) + ' of mass ' + str(int(obj)) + '.txt', 'w')
         f.write('snapshot \t galaxy number \n')
 
-    # if black hole mass, then it is monotomically increasing, and we can do what we did before.
+    # if black hole mass, then it is monotonically increasing, and we can do what we did before.
     if var == 8:
+        for key in keys:
+            for galaxy in read.galaxy_data[key]:
+                prev_galaxy = midpoint.m_preimage(key, galaxy)
+                if prev_galaxy is not None:
+                    if prev_galaxy[var] < obj < galaxy[var]:
+                        if init.item == 'stellar':
+                            objects.append(galaxy[6])
+                        elif init.item == 'dark matter':
+                            objects.append(galaxy[7])
+                        elif init.item == 'black hole':
+                            objects.append(galaxy[8])
+                        else:
+                            objects.append(key[0])
+                        if init.print_file:
+                            f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
+        '''
         for i in range(0, len(keys) - 1):
             for galaxy in read.galaxy_data[keys[i]]:
                 # decide what item to obtain histogram data for
@@ -50,10 +66,11 @@ def retrieve():
                     # 3. check that it has just passed the threshold mass
                     # 1 and 3 can be done together, but this makes the code run slightly faster (I think)
                     # plz fix, it currently adds 2 blackholes if a merger pushes it over the threshold
-                    if prev_galaxy[var] < obj and galaxy[0] == prev_galaxy[1] and galaxy[var] > obj:
+                    if prev_galaxy[var] < obj and galaxy[2] == prev_galaxy[0] and galaxy[var] > obj:
                         objects.append(item)
                         if init.print_file:
                             f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
+                            '''
     else:
         for galaxy in read.galaxy_data[keys[0]]:
             frame = (midpoint.midpoint(keys[0], galaxy, obj, var))
