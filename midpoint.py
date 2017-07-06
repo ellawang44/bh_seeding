@@ -29,32 +29,32 @@ def region(key, galaxy, threshold, var):
     # set initial condition
     galaxy_list = []
     current_galaxy = galaxy
-    f = None
+    first = None # f is the first time the mass crosses the threshold
     # a list of keys that come after the given key in the list
     next_keys = keys[keys.index(key):]
     for current_key in next_keys:
         prev_galaxy = m_preimage(current_key, current_galaxy)
         if prev_galaxy is None:
-            if f is not None:
+            if first is not None:
                 galaxy_list.append((current_key, current_galaxy))
                 break
             else:
                 break
         else:
-            if f is None:
+            if first is None:
                 if prev_galaxy[var] < threshold < current_galaxy[var]:
-                    f = (current_key, current_galaxy)
+                    first = (current_key, current_galaxy)
                     galaxy_list.append((current_key, current_galaxy))
             else:
                 galaxy_list.append((current_key, current_galaxy))
                 if prev_galaxy[var] < threshold < current_galaxy[var]:
-                    l = (keys[keys.index(current_key) + 1], prev_galaxy)
+                    last = (keys[keys.index(current_key) + 1], prev_galaxy)
         current_key = keys[keys.index(current_key) + 1]
         current_galaxy = prev_galaxy
     if galaxy_list == []:
         return None
     else:
-        region = galaxy_list[:(galaxy_list.index(l)+1)]
+        region = galaxy_list[:(galaxy_list.index(last)+1)]
         return region
 
 def midpoint(key, galaxy, var, threshold):
@@ -64,7 +64,7 @@ def midpoint(key, galaxy, var, threshold):
         return None
     else:
         mid = len(galaxy_range) / 2
-        if mid.is_integer() is False:
+        if not mid.is_integer():
              return galaxy_range[floor(mid)]
         else:
             # return the snapshot with the redshift closest to the center
