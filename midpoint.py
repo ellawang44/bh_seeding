@@ -1,5 +1,7 @@
 import read
 
+# if the dark matter halo dips below the threshold before present day, but was above previously, the last couple of frames when it was below is not included currently in the region. Include this is you get time (doesn't make that much of a difference)
+
 def preimage(key, galaxy):
     # get previous galaxies that are the pre image of the input galaxy
     keys = read.list_of_keys

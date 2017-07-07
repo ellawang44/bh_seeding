@@ -2,7 +2,7 @@ import read
 import init
 import midpoint
 
-# considers the galaxy mergers that occur and returns either redshift, stellar mass, black hole mass or dark matter halo mass when the given object first crosses the given mass
+# considers the galaxy mergers that occur and returns either redshift, stellar mass, black hole mass or dark matter halo mass when the given object first crosses the given mass (called threshold here)
 # except treats dark matter halo slightly differently. The dark matter halo is not monotomically increasing due to the friends of friends halo finder. We take the range over which it crosses the threshold mass and pick the snapshot in the middle
 
 data = None
@@ -31,7 +31,7 @@ def retrieve():
         f = open(str(err) + ' of mass ' + str(int(obj)) + '.txt', 'w')
         f.write('snapshot \t galaxy number \n')
 
-    # if black hole mass, then it is monotonically increasing, and we can do what we did before.
+    # if black hole mass, then it is monotonically increasing
     if var == 8:
         for key in keys:
             for galaxy in read.galaxy_data[key]:
@@ -45,15 +45,10 @@ def retrieve():
                     item = galaxy[8]
                 else:
                     item = key[0]
-                # if there was nothing in the previous snapshot, then we assume the mass was 0
-                if prev_galaxy is None and galaxy[var] > obj:
+                if prev_galaxy is not None and prev_galaxy[var] < obj < galaxy[var]:
                     objects.append(item)
                     if init.print_file:
-                        f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
-                elif prev_galaxy is not None and prev_galaxy[var] < obj < galaxy[var]:
-                    objects.append(item)
-                    if init.print_file:
-                        f.write(str(int(keys[i][1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
+                        f.write(str(int(key[1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
     else:
         for galaxy in read.galaxy_data[keys[0]]:
             frame = (midpoint.midpoint(keys[0], galaxy, obj, var))
