@@ -11,15 +11,15 @@ def retrieve():
     M_bh = init.M_bh
     r = init.r
     if M_stellar is not None:
-        var = 6
+        var = 7 # stellar mass
         obj = M_stellar
         err = 'stars'
     elif M_dm is not None:
-        var = 7
+        var = 8 # dark matter mass
         obj = M_dm
         err = 'dark matter haloes'
     elif M_bh is not None:
-        var = 8
+        var = 9 # black hole mass
         obj = M_bh
         err = 'black holes'
     else:
@@ -29,11 +29,11 @@ def retrieve():
     if var is not None:
         objects = []
         for key, value in read.galaxy_data.items():
-            current_redshift = key[0]
+            current_redshift = key[0] # redshift
             counts = 0
             # gets the number of objects that satisfy the given mass range
             for i in value:
-                if obj - r < i[var] < obj + r:
+                if obj - r < getattr(i, var) < obj + r:
                     counts += 1
             # build a tuple of the redshift and number if there is more than 0 objects that satisfy the mass range
             if counts != 0:

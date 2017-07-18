@@ -7,16 +7,12 @@ data = None
 # matches snapshot to key in dictionary
 
 def retrieve():
-    global data
+    global key
     snapshot = init.snapshot
     if snapshot is not None:
         for i in read.list_of_keys:
-            if i[1] == snapshot:
+            if i.snapshot == snapshot:
                 key = i
-
-    #retrieves data stored in the key
-
+    # if key corresponding to the given snapshot isn't found
     if key == 'initial key':
         raise ValueError('snapshot does not exist')
-    else:
-        data = read.galaxy_data[key]

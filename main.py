@@ -1,4 +1,5 @@
 import objects
+import read
 import trace
 import redshift
 import snapshot
@@ -7,6 +8,8 @@ import init
 from optparse import OptionParser
 
 parser = OptionParser()
+# reading in different files
+parser.add_option('-f', '--file', type = 'string', dest = 'file', help = 'read in different files')
 # data for a specific redshift/snapshot
 parser.add_option('-s', '--snapshot', type = 'int', dest = 'snapshot', help = 'takes the data for the specific snapshot. Needs to be used in conjuncture --xcoord, --ycoord, --zcoord, --stellar, --darkmatter or --blackhole. Include the desired tag with any float, this float will not be read in. Also needs to be given the number of bins to include in the histogram, e.g: --bin 100.')
 parser.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 'takes the data for the redshift closest to the given redshift. Needs to be used in conjuncture --xcoord, --ycoord, --zcoord, --stellar, --darkmatter or --blackhole. Include the desired tag with any float, this float will not be read in. Also needs to be given the number of bins to include in the histogram, e.g: --bin 100.')
@@ -31,6 +34,8 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     item = 'snapshot or redshift'
     data = None
+    if options.file:
+        init.file_name = options.file
     binnum = 100 # default number of bins
     # used for all histograms so it's up here
     if options.bin:
@@ -47,32 +52,39 @@ if __name__ == '__main__':
     # if --snapshot or --redshift is called
     if item != 'snapshot or redshift':
         name = 'initial'
+        dat = read.galaxy_data[item.key]
         if options.xcoord:
-            data = [i[3] for i in item.data]
+            # takes the x-coordinate
+            dat = [i.xcoord for i in dat]
             name = 'x-coordinates'
         elif options.ycoord:
-            data = [i[4] for i in item.data]
+            # takes the y-coordinate
+            dat = [i.ycoord for i in dat]
             name = 'y-coordinates'
         elif options.zcoord:
-            data = [i[5] for i in item.data]
+            # takes the z-coordinate
+            dat = [i.zcoord for i in dat]
             name = 'z-coordinates'
         elif options.stellar:
-            data = [i[6] for i in item.data]
+            # takes the stellar mass
+            dat = [i.stellar_mass for i in dat]
             name = 'stellar masses'
         elif options.darkmatter:
-            data = [i[7] for i in item.data]
+            # takes the dark matter mass
+            dat = [i.dark_matter_mass for i in dat]
             name = 'dark matter masses'
         elif options.blackhole:
-            data = [i[8] for i in item.data if i[8] != float('-inf')]
+            # takes the black hole mass, this can be -inf
+            dat = [i.black_hole_mass for i in dat if i.black_hole_mass != float('-inf')]
             name = 'black hole masses'
         else:
             raise ValueError('please parse second input. (help snapshot if unsure)')
-    if data is not None:
-        pylab.hist(data, bins = binnum)
-        # I should probably add a title
-        pylab.xlabel(name)
-        pylab.ylabel('number')
-        pylab.show()
+        if dat is not None:
+            pylab.hist(dat, bins = binnum)
+            # I should probably add a title
+            pylab.xlabel(name)
+            pylab.ylabel('number')
+            pylab.show()
 
     # graph for range around a given mass
     if options.range:

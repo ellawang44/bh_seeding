@@ -12,15 +12,15 @@ def retrieve():
     keys = read.list_of_keys
     objects = []
     if init.M_stellar is not None:
-        var = 6
+        var = 7 # stellar mass
         obj = init.M_stellar
         err = 'stars'
     elif init.M_dm is not None:
-        var = 7
+        var = 8 # dark matter mass
         obj = init.M_dm
         err = 'dark matter haloes'
     elif init.M_bh is not None:
-        var = 8
+        var = 9 # black hole mass
         obj = init.M_bh
         err = 'black holes'
     else:
@@ -32,37 +32,37 @@ def retrieve():
         f.write('snapshot \t galaxy number \n')
 
     # if black hole mass, then it is monotonically increasing
-    if var == 8:
+    if var == 9:
         for key in keys:
             for galaxy in read.galaxy_data[key]:
                 prev_galaxy = midpoint.m_preimage(key, galaxy)
                 # decide what to append
                 if init.item == 'stellar':
-                    item = galaxy[6]
+                    item = galaxy.stellar_mass
                 elif init.item == 'dark matter':
-                    item = galaxy[7]
+                    item = galaxy.dark_matter_mass
                 elif init.item == 'black hole':
-                    item = galaxy[8]
+                    item = galaxy.black_hole_mass
                 else:
-                    item = key[0]
+                    item = key.redshift
                 if prev_galaxy is not None and prev_galaxy[var] < obj < galaxy[var]:
                     objects.append(item)
                     if init.print_file:
-                        f.write(str(int(key[1])) + ' \t ' + str(int(galaxy[0])) + ' \n')
+                        f.write(str(int(key.snapshot)) + ' \t ' + str(int(galaxy.current)) + ' \n')
     else:
         for galaxy in read.galaxy_data[keys[0]]:
             frame = (midpoint.midpoint(keys[0], galaxy, obj, var))
             if frame is not None:
                 if init.item == 'stellar':
-                    objects.append(frame[1][6])
+                    objects.append(frame[1].stellar)
                 elif init.item == 'dark matter':
-                    objects.append(frame[1][7])
+                    objects.append(frame[1].dark_matter_mass)
                 elif init.item == 'black hole':
-                    objects.append(frame[1][8])
+                    objects.append(frame[1].black_hole_mass)
                 else:
-                    objects.append(frame[0][0])
+                    objects.append(frame[0].redshift)
                 if init.print_file:
-                    f.write(str(int(frame[0][1])) + '\t' + str(int(frame[1][0])) + '\n')
+                    f.write(str(int(frame[0].snapshot)) + '\t' + str(int(frame[1].current)) + '\n')
 
     # gotta close the file so Probie's computer (and Windows) doesn't get annoyed
     if init.print_file:
