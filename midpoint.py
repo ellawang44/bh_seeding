@@ -1,15 +1,5 @@
 import read
 
-def preimage(key, galaxy):
-    # get previous galaxies that are the pre image of the input galaxy
-    keys = read.list_of_keys
-    if key == keys[-1]:
-        return []
-    else:
-        # index 0 returns current number, 1 returns next number
-        galaxies = [prev_galaxy for prev_galaxy in read.galaxy_data[keys[keys.index(key)+1]] if galaxy.current == prev_galaxy.next]
-        return galaxies
-
 def m_preimage(key, galaxy):
     # get the biggest galaxy in te preimage of the input galaxy
     keys = read.list_of_keys
@@ -22,30 +12,7 @@ def m_preimage(key, galaxy):
         else:
             return prev_galaxy[0]
 
-# need to include tracing children, that's a thing right?
-def evolution(key, galaxy):
-    # traces the evolution of 1 galaxy only. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
-    # traces the biggest galaxy if a merger occurs
-    keys = read.list_of_keys
-    # set initial condition
-    galaxy_list = [(key, galaxy)]
-    current_galaxy = galaxy
-    # a list of keys that come after the given key in the list
-    next_keys = keys[-(len(keys) - keys.index(key)):] # I'm not sure why this version doesn't work, thanks probie? keys[keys.index(key) + 1:]
-    for current_key in next_keys:
-        galaxies = preimage(current_key, current_galaxy)
-        if len(galaxies) == 0:
-            break
-        elif len(galaxies) == 1:
-            galaxy_list.append((current_key, galaxies[0]))
-        else:
-            galaxies = [g for g in galaxies if g.current == current_galaxy.previous]
-            galaxy_list.append((current_key, galaxies[0]))
-        current_key = keys[keys.index(current_key) + 1]
-        current_galaxy = galaxies[0]
-    return galaxy_list
-
-def region(key, galaxy, threshold, var):
+def m_evolution(key, galaxy, threshold, var):
     # traces the evolution of 1 galaxy only. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
     # I mean technically could've been written only to work for the present day snapshot galaxies, it would've been easier, but that's no fun c:
     # traces the biggest galaxy if a merger occurs
@@ -82,9 +49,41 @@ def region(key, galaxy, threshold, var):
         region = galaxy_list[:(galaxy_list.index(last)+1)]
         return region
 
-def midpoint(key, galaxy, threshold, var):
+def preimage(key, galaxy):
+    # get previous galaxies that are the pre image of the input galaxy
+    keys = read.list_of_keys
+    if key == keys[-1]:
+        return []
+    else:
+        # index 0 returns current number, 1 returns next number
+        galaxies = [prev_galaxy for prev_galaxy in read.galaxy_data[keys[keys.index(key)+1]] if galaxy.current == prev_galaxy.next]
+        return galaxies
+
+# need to include tracing children, that's a thing right?
+def history(key, galaxy):
+    # traces the history of a galaxy. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
+    keys = read.list_of_keys
+    # set initial condition
+    galaxy_list = [(key, galaxy)]
+    current_galaxy = galaxy
+    # a list of keys that come after the given key in the list
+    next_keys = keys[-(len(keys) - keys.index(key)):] # I'm not sure why this version doesn't work, thanks probie? keys[keys.index(key) + 1:]
+    for current_key in next_keys:
+        galaxies = preimage(current_key, current_galaxy)
+        if len(galaxies) == 0:
+            break
+        elif len(galaxies) == 1:
+            galaxy_list.append((current_key, galaxies[0]))
+        else:
+            galaxies = [g for g in galaxies if g.current == current_galaxy.previous]
+            galaxy_list.append((current_key, galaxies[0]))
+        current_key = keys[keys.index(current_key) + 1]
+        current_galaxy = galaxies[0]
+    return galaxy_list
+
+def evolution(key, galaxy, threshold, var):
     # takes the midpoint of the section of the list that crosses the threshold
-    galaxies = evolution(key, galaxy)
+    galaxies = history(key, galaxy)
     cross = [n for n,(cg,pg) in enumerate(zip(galaxies,galaxies[1:])) if cg[1][var] > threshold > pg[1][var]]
     if cross == []:
         return None
