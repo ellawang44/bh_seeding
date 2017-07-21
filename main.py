@@ -5,16 +5,23 @@ import redshift
 import snapshot
 import pylab
 import init
-from optparse import OptionParser
+from optparse import OptionParser, OptionGroup
 
 parser = OptionParser()
+group1 = OptionGroup(parser,"redshift + xcoord")
+group1.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 'takes the data for the redshift closest to the given redshift. Needs to be used in conjuncture --xcoord, --ycoord, --zcoord, --stellar, --darkmatter or --blackhole. Include the desired tag with any float, this float will not be read in. Also needs to be given the number of bins to include in the histogram, e.g: --bin 100.')
+group1.add_option('--xcoord', type = 'float', dest = 'xcoord', help = 'takes the data for the x coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
+parser.add_option_group(group1)
+
+
 # reading in different files
 parser.add_option('-f', '--file', type = 'string', dest = 'file', help = 'read in different files')
 # data for a specific redshift/snapshot
 parser.add_option('-s', '--snapshot', type = 'int', dest = 'snapshot', help = 'takes the data for the specific snapshot. Needs to be used in conjuncture --xcoord, --ycoord, --zcoord, --stellar, --darkmatter or --blackhole. Include the desired tag with any float, this float will not be read in. Also needs to be given the number of bins to include in the histogram, e.g: --bin 100.')
-parser.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 'takes the data for the redshift closest to the given redshift. Needs to be used in conjuncture --xcoord, --ycoord, --zcoord, --stellar, --darkmatter or --blackhole. Include the desired tag with any float, this float will not be read in. Also needs to be given the number of bins to include in the histogram, e.g: --bin 100.')
+# parser.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 'takes the data for the redshift closest to the given redshift. Needs to be used in conjuncture --xcoord, --ycoord, --zcoord, --stellar, --darkmatter or --blackhole. Include the desired tag with any float, this float will not be read in. Also needs to be given the number of bins to include in the histogram, e.g: --bin 100.')
 # data for the coordinates
-parser.add_option('--xcoord', type = 'float', dest = 'xcoord', help = 'takes the data for the x coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
+
+# parser.add_option('--xcoord', type = 'float', dest = 'xcoord', help = 'takes the data for the x coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
 parser.add_option('--ycoord', type = 'float', dest = 'ycoord', help = 'takes the data for the y coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
 parser.add_option('--zcoord', type = 'float', dest = 'zcoord', help = 'takes the data for the z coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
 # range around mass
@@ -36,6 +43,7 @@ if __name__ == '__main__':
     data = None
     if options.file:
         init.file_name = options.file
+    read_data = read.FileData(init.file_name)
     binnum = 100 # default number of bins
     # used for all histograms so it's up here
     if options.bin:
@@ -47,12 +55,11 @@ if __name__ == '__main__':
         item.retrieve()
     if options.redshift or options.redshift == 0:
         init.redshift = options.redshift
-        item = redshift
-        item.retrieve()
+        item = redshift.Redshift(read_data)
     # if --snapshot or --redshift is called
     if item != 'snapshot or redshift':
         name = 'initial'
-        dat = read.galaxy_data[item.key]
+        dat = read_data.galaxy_data[item.key]
         if options.xcoord:
             # takes the x-coordinate
             dat = [i.xcoord for i in dat]
