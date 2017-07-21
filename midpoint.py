@@ -60,40 +60,44 @@ def preimage(key, galaxy):
         return galaxies
 
 # need to include tracing children, that's a thing right?
-def history(key, galaxy):
+def evolution(key, galaxy, prev_evo):
     # traces the history of a galaxy. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
     keys = read.list_of_keys
-    # set initial condition
-    galaxy_list = [(key, galaxy)]
-    current_galaxy = galaxy
-    # a list of keys that come after the given key in the list
-    next_keys = keys[-(len(keys) - keys.index(key)):] # I'm not sure why this version doesn't work, thanks probie? keys[keys.index(key) + 1:]
-    for current_key in next_keys:
-        galaxies = preimage(current_key, current_galaxy)
-        if len(galaxies) == 0:
-            break
-        elif len(galaxies) == 1:
-            galaxy_list.append((current_key, galaxies[0]))
+    # base conditions
+    prev_key = keys[keys.index(key) + 1]
+    prev_gals = preimage(key, galaxy)
+    prev_evo.append((key, galaxy))
+    while len(prev_gals) < 2:
+        if len(prev_gals) == 0:
+            return [prev_evo]
         else:
-            galaxies = [g for g in galaxies if g.current == current_galaxy.previous]
-            galaxy_list.append((current_key, galaxies[0]))
-        current_key = keys[keys.index(current_key) + 1]
-        current_galaxy = galaxies[0]
-    return galaxy_list
+            # allows us to call evolution less times than otherwise if this was placed outside the while loop
+            prev_evo.append((prev_key, prev_gals[0]))
+            galaxy = prev_gals[0]
+            key = prev_key
+            prev_key = keys[keys.index(key) + 1]
+            prev_gals = preimage(key, galaxy)
+            #evolution(prev_key, prev_gals[0], prev_evo)
+    # if there is more than 1 previous galaxy
+    result = []
+    for gal in prev_gals:
+        c_prev_evo = list(prev_evo)
+        # c_prev_evo.append((prev_key, gal))
+        result.extend(evolution(prev_key, gal, c_prev_evo))
+    return result
 
-def evolution(key, galaxy, threshold, var):
+def midpoint(gal_evo, threshold, var):
     # takes the midpoint of the section of the list that crosses the threshold
-    galaxies = history(key, galaxy)
-    cross = [n for n,(cg,pg) in enumerate(zip(galaxies,galaxies[1:])) if cg[1][var] > threshold > pg[1][var]]
+    cross = [n for n,(cg,pg) in enumerate(zip(gal_evo,gal_evo[1:])) if cg[1][var] > threshold > pg[1][var]]
     if cross == []:
         return None
     else:
         first, last = cross[0], cross[-1]
         # since mass can go down below the threshold, if this occurs in present day, we include it in the region (it'll eventually go back up)
         if galaxy[var] < threshold:
-            region = galaxies[:(last+2)]
+            region = gal_evo[:(last+2)]
         else:
-            region = galaxies[first:last+2]
+            region = gal_evo[first:last+2]
         mid = len(region) / 2
         if mid.is_integer():
             return region[int(mid)]
