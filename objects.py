@@ -24,15 +24,15 @@ class Objects (GalaxyData):
         else:
             var = None
 
-            # takes the redshifts for the chosen object
+        # takes the redshifts for the chosen object
         if var is not None:
             objects = []
             for key, value in self.read_data.galaxy_data.items():
-                current_redshift = key[0] # redshift
+                current_redshift = key.redshift
                 counts = 0
                 # gets the number of objects that satisfy the given mass range
-                for i in value:
-                    if obj - r < i[var] < obj + r:
+                for galaxy in value:
+                    if obj - r < galaxy[var] < obj + r:
                         counts += 1
                 # build a tuple of the redshift and number if there is more than 0 objects that satisfy the mass range
                 if counts != 0:

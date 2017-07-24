@@ -1,5 +1,6 @@
 from collections import defaultdict, namedtuple
-import init
+
+# name tuple so we can refer to each bit of data by name instead of indexing
 key_naming = namedtuple('key_data', ['redshift', 'snapshot'])
 galaxy_naming = namedtuple('galaxy_data', ['current', 'next', 'previous', 'present_day', 'xcoord', 'ycoord', 'zcoord', 'stellar_mass', 'dark_matter_mass', 'black_hole_mass'])
 
@@ -18,9 +19,6 @@ class FileData:
         # skip the first line of the file, the name of the columns
         next(halo)
         next(tree)
-
-        # name tuple so we can refer to each bit of data by name instead of indexing
-
 
         # stores the current key so we can update the entry in the for-loop
         current_key = ('redshift', 'snapshot number')
