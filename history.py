@@ -13,6 +13,14 @@ class History (GalaxyData):
             else:
                 return prev_galaxy[0]
 
+    def present(self, key, galaxy, threshold, var):
+        evol = self.m_evolution(key, galaxy, threshold, var)
+        if evol is not None:
+            mid = self.midpoint(evol, threshold, var)
+            if mid is not None:
+                return (galaxy, mid)
+        return None
+
     def m_evolution(self, key, galaxy, threshold, var):
         # traces the evolution of 1 galaxy only. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
         # I mean technically could've been written only to work for the present day snapshot galaxies, it would've been easier, but that's no fun c:
@@ -65,7 +73,9 @@ class History (GalaxyData):
         # traces the history of a galaxy. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
         keys = self.read_data.list_of_keys
         # base conditions
-        prev_key = keys[keys.index(key) + 1]
+        try:
+            prev_key = keys[keys.index(key) + 1]
+        except IndexError: return [prev_evo]
         prev_gals = self.preimage(key, galaxy)
         prev_evo.append((key, galaxy))
         while len(prev_gals) < 2:
@@ -76,7 +86,9 @@ class History (GalaxyData):
                 prev_evo.append((prev_key, prev_gals[0]))
                 galaxy = prev_gals[0]
                 key = prev_key
-                prev_key = keys[keys.index(key) + 1]
+                try:
+                    prev_key = keys[keys.index(key) + 1]
+                except IndexError: return [prev_evo]
                 prev_gals = self.preimage(key, galaxy)
                 #evolution(prev_key, prev_gals[0], prev_evo)
         # if there is more than 1 previous galaxy
@@ -89,6 +101,7 @@ class History (GalaxyData):
 
     def midpoint(self, gal_evo, threshold, var):
         # takes the midpoint of the section of the list that crosses the threshold
+        galaxy = gal_evo[0][1]
         cross = [n for n,(cg,pg) in enumerate(zip(gal_evo,gal_evo[1:])) if cg[1][var] > threshold > pg[1][var]]
         if cross == []:
             return None

@@ -14,8 +14,8 @@ class GalaxyData:
 class FileData:
     def __init__(self,name):
         # reads in the data
-        halo = open('data/halo_data_' + name + '.dat','r')
-        tree = open('data/tree_data_' + name + '.dat','r')
+        halo = open('data/halo_data' + name + '.dat','r')
+        tree = open('data/tree_data' + name + '.dat','r')
         # skip the first line of the file, the name of the columns
         next(halo)
         next(tree)

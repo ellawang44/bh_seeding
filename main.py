@@ -16,33 +16,25 @@ parser.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 
 
 parser.add_option('-s', '--snapshot', type = 'int', dest = 'snapshot', help = 'takes the data for the specific snapshot. Needs to be used in conjuncture with "--data". The bin size of the histogram can be changed with "--bin", the default is 100.')
 
-parser.add_option('--data', type = 'string', dest = 'data', help = 'Determines what data to pick from the galaxy. The possible inputs are "xcoord", "ycoord", "zcoord", "stellar", "dark matter" and "black hole".')
+parser.add_option('--data', type = 'string', dest = 'data', help = 'Determines what data to pick from the galaxy. The possible inputs are "redshift", "xcoord", "ycoord", "zcoord", "stellar", "dark matter" and "black hole".')
 
 #frame = OptionGroup(parser,"redshift + xcoord")
 #frame.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 'takes the data for the redshift closest to the given redshift. Needs to be used in conjuncture --xcoord, --ycoord, --zcoord, --stellar, --darkmatter or --blackhole. Include the desired tag with any float, this float will not be read in. Also needs to be given the number of bins to include in the histogram, e.g: --bin 100.')
 #parser.add_option_group(frame)
 
-
-# parser.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 'takes the data for the redshift closest to the given redshift. Needs to be used in conjuncture --xcoord, --ycoord, --zcoord, --stellar, --darkmatter or --blackhole. Include the desired tag with any float, this float will not be read in. Also needs to be given the number of bins to include in the histogram, e.g: --bin 100.')
-# data for the coordinates
-
 # parser.add_option('--xcoord', type = 'float', dest = 'xcoord', help = 'takes the data for the x coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
-parser.add_option('--ycoord', type = 'float', dest = 'ycoord', help = 'takes the data for the y coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
-parser.add_option('--zcoord', type = 'float', dest = 'zcoord', help = 'takes the data for the z coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
-# range around mass
-parser.add_option('-r', '--range', type = 'float', dest = 'range', help = 'range around the given mass. e.g: if r = 2 and m = 5, then the data will contain objects in conjuncture mass from 3 to 7. By default, r = 1. Needs to be used in conjuecture with --stellar, --darkmatter or --blackhole.')
+# parser.add_option('--ycoord', type = 'float', dest = 'ycoord', help = 'takes the data for the y coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
+# parser.add_option('--zcoord', type = 'float', dest = 'zcoord', help = 'takes the data for the z coordinate. Needs to be used in conjuncture --snapshot or --redshift.')
 # data for mass
-parser.add_option('-m', '--stellar', type = 'float', dest = 'stellar', help = 'If used alone, will trace galaxy merges and return the redshift when a particular galaxys stellar mass first goes above the input mass. If used in conjuncture with --range: for the given stellar mass, takes all the haloes that has stellar mass in conjuncturein the given range around the specified mass and returns the redshift at which they occur and the number of times it occurs at that redshift. If used in conjuncture --snapshot or --redshift: returns the distribution of stellar masses for a the given snapshot/redshift.')
+parser.add_option('-m', '--stellar', type = 'float', dest = 'stellar', help = 'Trace galaxy merges and return the redshift when a particular galaxys stellar mass first goes above the input mass.')
 parser.add_option('-d', '--darkmatter', type = 'float', dest = 'darkmatter', help = 'If used alone, will trace galaxy merges and return the redshift when a particular galaxys dark matter mass first goes above the input mass. If used in conjuncture with --range: for the given dark matter mass, takes all the haloes that has dark matter mass in conjuncturein the given range around the specified mass and returns the redshift at which they occur and the number of times it occurs at that redshift. If used in conjuncture --snapshot or --redshift: returns the distribution of dark matter halo masses for a the given snapshot/redshift.')
 parser.add_option('-b', '--blackhole', type = 'float', dest = 'blackhole', help = 'If used alone, will trace galaxy merges and return the redshift when a particular galaxys black hole mass first goes above the input mass. If used in conjuncture with --range: for the given black hole mass, takes all the haloes that has black hole mass in conjuncturein the given range around the specified mass and returns the redshift at which they occur and the number of times it occurs at that redshift. If used in conjuncture --snapshot or --redshift: returns the distribution of black hole masses for a the given snapshot/redshift.')
 # pick the mass data to take for a the object at the given mass. E.g: return dark matter haloes for all black holes at mass 5.
-parser.add_option('--object', type = 'string', dest = 'object', help = 'picks the mass data for the input object, can be "stellar", "black hole", "dark matter" or "redshift". Used in conjuncture with --stellar, --darkmatter or --blackhole. e.g: --darkmatter 10 --object blackhole returns the masses of black holes which have a darkmatter halo of just above 10 in a histogram. Can also be used with --txt to create a txt file which contains all the snapshot and galaxy numbers of the histogram.')
+# print file containing galaxies of interest
+parser.add_option('--txt', action = 'store_true', dest = 'txt', help = 'outputs a helpful file.')
 
 # number of bins in histogram
 parser.add_option('--bin', type = 'int', dest = 'bin', help = 'Number of bins drawn on the histgram for data for a single snapshot or redshift.')
-
-# print text file of snapshot number and galaxy number or not
-parser.add_option('--txt', dest = 'txt', default = False, help = 'creates a .txt file which contains the snapshot and galaxy number. Used in conjuecture with object.')
 
 if __name__ == '__main__':
     (options, args) = parser.parse_args()
@@ -56,26 +48,15 @@ if __name__ == '__main__':
     if options.bin:
         binnum = options.bin
 
-    if options.data == 'xcoord':
-        var = 4
-        name = 'x-coordinates'
-    elif options.data == 'ycoord':
-        var = 5
-        name = 'y-coordinates'
-    elif options.data == 'zcoord':
-        var = 6
-        name = 'z-coordinates'
-    elif options.data == 'stellar':
-        var = 7
-        name = 'stellar mass'
-    elif options.data == 'dark matter':
-        var = 8
-        name = 'dark matter mass'
-    elif options.data == 'black hole':
-        var = 9
-        name = 'black hole mass'
-    else:
-        raise ValueError('not a valid data input')
+    var, name = { 'redshift' : (0, 'redshift'),
+                 'xcoord' : (4, 'x-coordinates'),
+                 'ycoord' : (5, 'y-coordinates'),
+                 'zcoord' : (6, 'z-coordinates'),
+                 'stellar' : (7, 'stellar mass'),
+                 'dark matter' : (8, 'dark matter mass'),
+                 'black hole' : (9, 'black hole mass'),
+                 None : (None, None)
+            }[options.data]
 
     # graph for a single frame in the simulation
     galaxies = None
@@ -88,40 +69,42 @@ if __name__ == '__main__':
         key = redshift.Redshift(init.file_name).key
         galaxies = read_data.galaxy_data[key]
     if galaxies is not None:
-        data = [g[var] for g in galaxies]
+        galaxies = [g[var] for g in galaxies]
         # filter out -inf
         if var == 9:
-            data = [i for i in data if i != float('-inf')]
-        pylab.hist(data, bins = binnum)
+            galaxies = [i for i in galaxies if i != float('-inf')]
+        pylab.hist(galaxies, bins = binnum)
         pylab.xlabel(name)
         pylab.ylabel('number')
         pylab.show()
 
     # graph for tracing the mass of an object in a galaxy
+    # prints file output
     if options.txt:
         init.print_file = True
-    if options.object:
-        init.item = options.object
-        if options.stellar:
-            init.M_stellar = options.stellar
-            trace.retrieve()
-            data = trace.data
-            title = 'stellar mass = ' + str(options.stellar)
-        if options.darkmatter:
-            init.M_dm = options.darkmatter
-            trace.retrieve()
-            data = trace.data
-            title = 'dark matter mass = ' + str(options.darkmatter)
-        if options.blackhole:
-            init.M_bh = options.blackhole
-            trace.retrieve()
-            data = trace.data
-            title = 'black hole mass = ' + str(options.blackhole)
     data = None
-    if data is not None:
+    if options.stellar:
+        init.M_stellar = options.stellar
+        galaxies = trace.Trace(init.file_name).data
+        title = 'stellar mass = ' + str(options.stellar)
+    elif options.darkmatter:
+        init.M_dm = options.darkmatter
+        galaxies = trace.Trace(init.file_name).data
+        title = 'dark matter mass = ' + str(options.darkmatter)
+    elif options.blackhole:
+        init.M_bh = options.blackhole
+        galaxies = trace.Trace(init.file_name).data
+        title = 'black hole mass = ' + str(options.blackhole)
+    if options.data == 'redshift':
+        data = [g[0][var] for g in galaxies]
+    else:
+        data = [g[1][var] for g in galaxies]
         data = [i for i in data if i != float('-inf')]
+    if data is not None:
         pylab.hist(data, bins = binnum)
         pylab.title(title)
-        pylab.xlabel(options.object)
+        pylab.xlabel(name)
         pylab.ylabel('number')
         pylab.show()
+
+    # graph for present day data for galaxies of interest
