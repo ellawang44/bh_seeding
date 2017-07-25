@@ -2,7 +2,7 @@
 snapshot = None
 redshift = None
 M_stellar = None
-M_dm = 10
+M_dm = None
 M_bh = None
 x_coord = None
 y_coord = None
