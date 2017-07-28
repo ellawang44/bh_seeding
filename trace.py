@@ -46,10 +46,13 @@ class Trace (GalaxyData):
                         evos = hist.evolution(keys[0], galaxy, [])
                         midpoints = [hist.midpoint(evo, obj, var) for evo in evos]
                         frames = [f for f in midpoints if f is not None]
-                        for f in frames:
-                            objects.append(f)
-                            if init.print_file:
-                                f.write(str(int(frame[0].snapshot)) + '\t' + str(int(frame[1].current)) + '\n')
+                        # remove doubles
+                        if frames != []:
+                            frames = list(set(frames))
+                            for f in frames:
+                                objects.append(f)
+                                if init.print_file:
+                                    f.write(str(int(frame[0].snapshot)) + '\t' + str(int(frame[1].current)) + '\n')
 
         # gotta close the file so Probie's computer (and Windows) doesn't get annoyed
         if init.print_file:

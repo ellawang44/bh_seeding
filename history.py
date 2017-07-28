@@ -13,14 +13,6 @@ class History (GalaxyData):
             else:
                 return prev_galaxy[0]
 
-    def present(self, key, galaxy, threshold, var):
-        evol = self.m_evolution(key, galaxy, threshold, var)
-        if evol is not None:
-            mid = self.midpoint(evol, threshold, var)
-            if mid is not None:
-                return (galaxy, mid)
-        return None
-
     def m_evolution(self, key, galaxy, threshold, var):
         # traces the evolution of 1 galaxy only. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
         # I mean technically could've been written only to work for the present day snapshot galaxies, it would've been easier, but that's no fun c:
@@ -57,6 +49,14 @@ class History (GalaxyData):
         else:
             region = galaxy_list[:(galaxy_list.index(last)+1)]
             return region
+
+    def present(self, key, galaxy, threshold, var):
+        evol = self.m_evolution(key, galaxy, threshold, var)
+        if evol is not None:
+            mid = self.midpoint(evol, threshold, var)
+            if mid is not None:
+                return (galaxy, mid)
+        return None
 
     def preimage(self, key, galaxy):
         # get previous galaxies that are the pre image of the input galaxy
