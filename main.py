@@ -28,7 +28,7 @@ parser.add_option('-d', '--darkmatter', type = 'float', dest = 'darkmatter', hel
 parser.add_option('-b', '--blackhole', type = 'float', dest = 'blackhole', help = 'If used alone, will trace galaxy merges and return the redshift when a particular galaxys black hole mass first goes above the input mass. If used in conjuncture with --range: for the given black hole mass, takes all the haloes that has black hole mass in conjuncturein the given range around the specified mass and returns the redshift at which they occur and the number of times it occurs at that redshift. If used in conjuncture --snapshot or --redshift: returns the distribution of black hole masses for a the given snapshot/redshift.')
 
 # takes the present day image of the galaxies of interest
-parser.add_option('--pres_day', action = 'store_true', dest = 'pres_day', help = 'takes the present day image of the galaxies that cross the desired threshold.')
+parser.add_option('--downsizing', action = 'store_true', dest = 'downsizing', help = 'Takes the selected data and outputs a scatter plot of the redshift along the x-axis and the data on the y-axis.')
 
 # print file containing galaxies of interest
 parser.add_option('--txt', action = 'store_true', dest = 'txt', help = 'outputs a file containing the galaxy number of galaxies that cross over the threshold and the snapshot number when they cross over.')
@@ -84,49 +84,41 @@ if __name__ == '__main__':
 
     # graph for tracing the mass of an object in a galaxy
     galaxies2 = None
-    pres_gal = None
     if options.stellar:
         init.M_stellar = options.stellar
         title = 'stellar mass = ' + str(options.stellar)
-        if options.pres_day:
-            pres_gal = pres.Pres(init.file_name).data
-            name = 'present day ' + name
-        else:
-            galaxies2 = trace.Trace(init.file_name).data
+        galaxies2 = trace.Trace(init.file_name).data
     elif options.darkmatter:
         init.M_dm = options.darkmatter
         title = 'dark matter mass = ' + str(options.darkmatter)
-        if options.pres_day:
-            pres_gal = pres.Pres(init.file_name).data
-            name = 'present day ' + name
-        else:
-            galaxies2 = trace.Trace(init.file_name).data
+        galaxies2 = trace.Trace(init.file_name).data
     elif options.blackhole:
         init.M_bh = options.blackhole
         title = 'black hole mass = ' + str(options.blackhole)
-        if options.pres_day:
-            pres_gal = pres.Pres(init.file_name).data
-            name = 'present day ' + name
-        else:
-            galaxies2 = trace.Trace(init.file_name).data
+        galaxies2 = trace.Trace(init.file_name).data
 
     if galaxies2 is not None:
-            if options.data == 'redshift':
-                galaxies2 = [g[0][var] for g in galaxies2]
-            else:
-                galaxies2 = [g[1][var] for g in galaxies2]
-                galaxies2 = [i for i in galaxies2 if i != float('-inf')]
-            pylab.hist(galaxies2, bins = binnum)
+        if options.data == 'redshift':
+            res = [g[0][var] for g in galaxies2]
+        else:
+            res = [g[1][var] for g in galaxies2]
+        if options.downsizing:
+            redshift = [g[0].redshift for g in galaxies2]
+            # if black holes, need to filter out -inf
+            if var == 9:
+                filt = [g for g in zip(redshift, res) if g[1] != float('-inf')]
+                redshift = [g[0] for g in filt]
+                res = [g[1] for g in filt]
+            pylab.scatter(redshift, res)
+            pylab.title(title)
+            pylab.xlabel('redshift')
+            pylab.ylabel(name)
+            pylab.show()
+        else:
+            if var == 9:
+                res = [g for g in res if g != float('-inf')]
+            pylab.hist(res, bins = binnum)
             pylab.title(title)
             pylab.xlabel(name)
             pylab.ylabel('number')
             pylab.show()
-    elif pres_gal is not None:
-        pres_gal = [g for g in pres_gal if g[0][var] != float('-inf')]
-        pres = [g[0][var] for g in pres_gal]
-        redshift = [g[1][0].redshift for g in pres_gal]
-        pylab.scatter(pres, redshift)
-        pylab.title(title)
-        pylab.xlabel(name)
-        pylab.ylabel('redshift')
-        pylab.show()

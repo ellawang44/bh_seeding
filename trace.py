@@ -14,20 +14,23 @@ class Trace (GalaxyData):
             var = 7 # stellar mass
             obj = init.M_stellar
             err = 'stars'
+            file_name = 'star'
         elif init.M_dm is not None:
             var = 8 # dark matter mass
             obj = init.M_dm
             err = 'dark matter halos'
+            file_name = 'dm'
         elif init.M_bh is not None:
             var = 9 # black hole mass
             obj = init.M_bh
             err = 'black holes'
+            file_name = 'bh'
         else:
             var = None
 
         # print file containing snapshots and galaxy numbers
         if init.print_file:
-            f = open(str(err) + ' of mass ' + str(int(obj)) + '.txt', 'w')
+            f = open(file_name + '_mass_' + str(int(obj)) + '.txt', 'w')
             f.write('snapshot \t galaxy number \n')
         hist = history.History(self.read_data)
         # if black hole mass, then it is monotonically increasing
@@ -40,19 +43,16 @@ class Trace (GalaxyData):
                         if init.print_file:
                             f.write(str(int(key.snapshot)) + ' \t ' + str(int(galaxy.current)) + ' \n')
         else:
-            for key in keys:
-                for galaxy in self.read_data.galaxy_data[key]:
-                    if galaxy.next == -1:
-                        evos = hist.evolution(keys[0], galaxy, [])
-                        midpoints = [hist.midpoint(evo, obj, var) for evo in evos]
-                        frames = [f for f in midpoints if f is not None]
-                        # remove doubles
-                        if frames != []:
-                            frames = list(set(frames))
-                            for f in frames:
-                                objects.append(f)
-                                if init.print_file:
-                                    f.write(str(int(frame[0].snapshot)) + '\t' + str(int(frame[1].current)) + '\n')
+            for galaxy in self.read_data.galaxy_data[(0, 1000)]:
+                evos = hist.evolution(keys[0], galaxy, [])
+                midpoints = [hist.midpoint(evo, obj, var) for evo in evos]
+                frames = [f for f in midpoints if f is not None]
+                # remove doubles
+                if frames != []:
+                    for fra in frames:
+                        objects.append(fra)
+                        if init.print_file:
+                            f.write(str(int(fra[0].snapshot)) + '\t' + str(int(fra[1].current)) + '\n')
 
         # gotta close the file so Probie's computer (and Windows) doesn't get annoyed
         if init.print_file:

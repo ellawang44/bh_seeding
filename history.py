@@ -93,17 +93,18 @@ class History (GalaxyData):
                 #evolution(prev_key, prev_gals[0], prev_evo)
         # if there is more than 1 previous galaxy
         result = []
+        m_prev_gal = [g for g in prev_gals if g.current == galaxy.previous][0]
+        result.extend(self.evolution(prev_key, m_prev_gal, prev_evo))
+        prev_gals.remove(m_prev_gal)
         for gal in prev_gals:
-            c_prev_evo = list(prev_evo)
-            # c_prev_evo.append((prev_key, gal))
-            result.extend(self.evolution(prev_key, gal, c_prev_evo))
+            result.extend(self.evolution(prev_key, gal, []))
         return result
 
     def midpoint(self, gal_evo, threshold, var):
         # takes the midpoint of the section of the list that crosses the threshold
         galaxy = gal_evo[0][1]
         cross = [n for n,(cg,pg) in enumerate(zip(gal_evo,gal_evo[1:])) if cg[1][var] > threshold > pg[1][var]]
-        if cross == []:
+        if len(cross) < 2:
             return None
         else:
             first, last = cross[0], cross[-1]
