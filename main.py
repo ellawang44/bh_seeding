@@ -1,9 +1,14 @@
+import matplotlib
 import read
 import trace
 import redshift
 import snapshot
 import pylab
 import init
+import numpy
+import seaborn
+import matplotlib.pyplot as plt
+from scipy import stats
 from optparse import OptionParser
 
 parser = OptionParser()
@@ -32,6 +37,9 @@ parser.add_option('--downsizing', action = 'store_true', dest = 'downsizing', he
 # print file containing galaxies of interest
 parser.add_option('--txt', action = 'store_true', dest = 'txt', help = 'outputs a file containing the galaxy number of galaxies that cross over the threshold and the snapshot number when they cross over. Used together with "--data" and either "--stellar", "--darkmatter" or "--blackhole".')
 
+# print statistics of histogram
+parser.add_option('--stats', action = 'store_true', dest = 'stats', help = 'prints to screen the statistics of the histogram.')
+
 # number of bins in histogram
 parser.add_option('--bin', type = 'int', dest = 'bin', help = 'Determines the number of bins drawn on the histgram.')
 
@@ -40,7 +48,8 @@ if __name__ == '__main__':
 
     # sets the correct file to read in
     if options.file:
-        init.file = options.file
+        init.file_name = options.file
+        print(init.file_name)
 
     read_data = read.FileData(init.file_name)
     binnum = 100 # default number of bins
@@ -74,9 +83,24 @@ if __name__ == '__main__':
         # filter out -inf
         if var == 9:
             galaxies = [i for i in galaxies if i != float('-inf')]
-        pylab.hist(galaxies, bins = binnum)
+        # seaborn.distplot(galaxies, bins = binnum, kde = False, norm_hist = True)
+        plt.hist(galaxies, bins = binnum, orientation = 'vertical', color = None, rwidth = 100)
+        if options.stats:
+            # clusterfuck of stats
+            mean = numpy.mean(galaxies)
+            median = numpy.median(galaxies)
+            std = numpy.std(galaxies)
+            skew = stats.skew(galaxies, bias = False)
+            kurt = stats.kurtosis(galaxies)
+            print('mean: ' + str(mean))
+            print('median: ' + str(median))
+            print('standard deviation: ' + str(std))
+            print('skewness: ' + str(skew))
+            print('kurtosis: ' + str(kurt))
+            x = numpy.arange(min(galaxies), max(galaxies), 0.001)
+            plt.plot(x, stats.norm.pdf(x, mean, std), color = 'black')
         pylab.xlabel(name)
-        pylab.ylabel('number')
+        pylab.ylabel('density')
         pylab.show()
 
     # if txt output is wanted
@@ -87,15 +111,12 @@ if __name__ == '__main__':
     galaxies2 = None
     if options.stellar:
         init.M_stellar = options.stellar
-        title = 'stellar mass = ' + str(options.stellar)
         galaxies2 = trace.Trace(init.file_name).data
     elif options.darkmatter:
         init.M_dm = options.darkmatter
-        title = 'dark matter mass = ' + str(options.darkmatter)
         galaxies2 = trace.Trace(init.file_name).data
     elif options.blackhole:
         init.M_bh = options.blackhole
-        title = 'black hole mass = ' + str(options.blackhole)
         galaxies2 = trace.Trace(init.file_name).data
 
     if galaxies2 is not None:
@@ -111,8 +132,7 @@ if __name__ == '__main__':
                 filt = [g for g in zip(redshift, res) if g[1] != float('-inf')]
                 redshift = [g[0] for g in filt]
                 res = [g[1] for g in filt]
-            pylab.scatter(redshift, res)
-            pylab.title(title)
+            pylab.scatter(redshift, res, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
             pylab.xlabel('redshift')
             pylab.ylabel(name)
             pylab.show()
@@ -121,8 +141,21 @@ if __name__ == '__main__':
             # if black holes, filter out -inf
             if var == 9:
                 res = [g for g in res if g != float('-inf')]
-            pylab.hist(res, bins = binnum)
-            pylab.title(title)
+            seaborn.distplot(res, bins = binnum, kde = False, norm_hist = True)
+            if options.stats:
+                # clusterfuck of stats
+                mean = numpy.mean(res)
+                median = numpy.median(res)
+                std = numpy.std(res)
+                skew = stats.skew(res)
+                kurt = stats.kurtosis(res)
+                print('mean: ' + str(mean) + '\n' +
+                'median: ' + str(median) + '\n' +
+                'standard deviation: ' + str(std) + '\n' +
+                'skewness: ' + str(skew) + '\n' +
+                'kurtosis: ' + str(kurt))
+                x = numpy.arange(min(res), max(res), 0.001)
+                plt.plot(x, stats.norm.pdf(x, mean, std), color = 'black')
             pylab.xlabel(name)
-            pylab.ylabel('number')
+            pylab.ylabel('density')
             pylab.show()
