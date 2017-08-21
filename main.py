@@ -1,4 +1,3 @@
-import matplotlib
 import read
 import trace
 import redshift
@@ -6,12 +5,22 @@ import snapshot
 import pylab
 import init
 import numpy
-import seaborn
+from collections import defaultdict
 import matplotlib.pyplot as plt
 from scipy import stats
 from optparse import OptionParser
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
 
 parser = OptionParser()
+
+# ks test keromerogh's speamouth test?
+# label the distribution numbers
 
 # reading in different files
 parser.add_option('-f', '--file', type = 'string', dest = 'file', help = 'Determines the input file. Can also parse galaxy data.')
@@ -62,9 +71,9 @@ if __name__ == '__main__':
                  'xcoord' : (4, 'x-coordinates'),
                  'ycoord' : (5, 'y-coordinates'),
                  'zcoord' : (6, 'z-coordinates'),
-                 'stellar' : (7, 'stellar mass'),
-                 'dark matter' : (8, 'dark matter mass'),
-                 'black hole' : (9, 'black hole mass'),
+                 'stellar' : (7, r'log $M_{*}$ [\rm{M}_{\odot}]'),
+                 'dark matter' : (8, r'log $M_{\rm DM}$ [\rm{M}_{\odot}]'),
+                 'black hole' : (9, r'log $M_{\rm BH}$ [\rm M_{\odot}]'),
                  None : (None, None)
             }[options.data]
 
@@ -83,24 +92,26 @@ if __name__ == '__main__':
         # filter out -inf
         if var == 9:
             galaxies = [i for i in galaxies if i != float('-inf')]
-        # seaborn.distplot(galaxies, bins = binnum, kde = False, norm_hist = True)
-        plt.hist(galaxies, bins = binnum, orientation = 'vertical', color = None, rwidth = 100)
+        plt.hist(galaxies, bins = binnum,  edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
         if options.stats:
-            # clusterfuck of stats
+            # calculates a lot of stats
             mean = numpy.mean(galaxies)
             median = numpy.median(galaxies)
             std = numpy.std(galaxies)
             skew = stats.skew(galaxies, bias = False)
             kurt = stats.kurtosis(galaxies)
-            print('mean: ' + str(mean))
-            print('median: ' + str(median))
-            print('standard deviation: ' + str(std))
-            print('skewness: ' + str(skew))
-            print('kurtosis: ' + str(kurt))
+            print('mean: ' + str(mean) + '\n' +
+            'median: ' + str(median) + '\n' +
+            'standard deviation: ' + str(std) + '\n' +
+            'skewness: ' + str(skew) + '\n' +
+            'kurtosis: ' + str(kurt))
             x = numpy.arange(min(galaxies), max(galaxies), 0.001)
-            plt.plot(x, stats.norm.pdf(x, mean, std), color = 'black')
-        pylab.xlabel(name)
-        pylab.ylabel('density')
+            binwidth = (max(galaxies) - min(galaxies))/binnum
+            plt.plot(x, len(galaxies)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
+        pylab.xlabel(name, size = 15)
+        pylab.ylabel(r'$N$', size = 15)
+        pylab.xticks(size = 15)
+        pylab.yticks(size = 15)
         pylab.show()
 
     # if txt output is wanted
@@ -133,15 +144,36 @@ if __name__ == '__main__':
                 redshift = [g[0] for g in filt]
                 res = [g[1] for g in filt]
             pylab.scatter(redshift, res, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
-            pylab.xlabel('redshift')
-            pylab.ylabel(name)
+            # bin values using a dictionary
+            _, binedge = numpy.histogram(redshift, bins = binnum)
+            bin_dict = defaultdict(lambda: [])
+            for i in list(zip(redshift, res)):
+                bin_mid, val = [((a+b)/2, i[1]) for (a, b) in list(zip(binedge, binedge[1:])) if a <= i[0] <= b][0]
+                bin_dict[bin_mid].append(val)
+            # calculate mean lines
+            x_mid = [(a+b)/2 for (a, b) in list(zip(binedge, binedge[1:]))]
+            red_mid, l, m, u = [], [], [], []
+            for i in x_mid:
+                vals = bin_dict[i]
+                # only extend the mean lines if there are more than 30 data points
+                if len(vals) >= 30:
+                    red_mid.append(i)
+                    l.append(numpy.percentile(vals, 16))
+                    m.append(numpy.percentile(vals, 50))
+                    u.append(numpy.percentile(vals, 84))
+            # plot
+            pylab.plot(red_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.7)
+            pylab.plot(red_mid, m, label = 'mean', color = 'black', alpha = 0.7)
+            pylab.plot(red_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.7)
+            pylab.xlabel(r'$z$', size = 15)
+            pylab.ylabel(name, size = 15)
             pylab.show()
         # produces histogram
         else:
             # if black holes, filter out -inf
             if var == 9:
                 res = [g for g in res if g != float('-inf')]
-            seaborn.distplot(res, bins = binnum, kde = False, norm_hist = True)
+            plt.hist(res, bins = binnum,  edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
             if options.stats:
                 # clusterfuck of stats
                 mean = numpy.mean(res)
@@ -155,7 +187,10 @@ if __name__ == '__main__':
                 'skewness: ' + str(skew) + '\n' +
                 'kurtosis: ' + str(kurt))
                 x = numpy.arange(min(res), max(res), 0.001)
-                plt.plot(x, stats.norm.pdf(x, mean, std), color = 'black')
-            pylab.xlabel(name)
-            pylab.ylabel('density')
+                binwidth = (max(res) - min(res))/binnum
+                plt.plot(x, len(res)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
+            pylab.xlabel(name, size = 15)
+            pylab.ylabel(r'$N$', size = 15)
+            # pylab.xticks(size = 12)
+            # pylab.yticks(size = 12)
             pylab.show()
