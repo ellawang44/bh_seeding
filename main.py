@@ -58,7 +58,6 @@ if __name__ == '__main__':
     # sets the correct file to read in
     if options.file:
         init.file_name = options.file
-        print(init.file_name)
 
     read_data = read.FileData(init.file_name)
     binnum = 100 # default number of bins
@@ -74,6 +73,7 @@ if __name__ == '__main__':
                  'stellar' : (7, r'log $M_{*}$ [\rm{M}_{\odot}]'),
                  'dark matter' : (8, r'log $M_{\rm DM}$ [\rm{M}_{\odot}]'),
                  'black hole' : (9, r'log $M_{\rm BH}$ [\rm M_{\odot}]'),
+                 'gas' : (10, r'log $M_{\rm g}$ [\rm M_{\odot}]'),
                  None : (None, None)
             }[options.data]
 
@@ -144,27 +144,28 @@ if __name__ == '__main__':
                 redshift = [g[0] for g in filt]
                 res = [g[1] for g in filt]
             pylab.scatter(redshift, res, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
-            # bin values using a dictionary
-            _, binedge = numpy.histogram(redshift, bins = binnum)
-            bin_dict = defaultdict(lambda: [])
-            for i in list(zip(redshift, res)):
-                bin_mid, val = [((a+b)/2, i[1]) for (a, b) in list(zip(binedge, binedge[1:])) if a <= i[0] <= b][0]
-                bin_dict[bin_mid].append(val)
-            # calculate mean lines
-            x_mid = [(a+b)/2 for (a, b) in list(zip(binedge, binedge[1:]))]
-            red_mid, l, m, u = [], [], [], []
-            for i in x_mid:
-                vals = bin_dict[i]
-                # only extend the mean lines if there are more than 30 data points
-                if len(vals) >= 30:
-                    red_mid.append(i)
-                    l.append(numpy.percentile(vals, 16))
-                    m.append(numpy.percentile(vals, 50))
-                    u.append(numpy.percentile(vals, 84))
-            # plot
-            pylab.plot(red_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.7)
-            pylab.plot(red_mid, m, label = 'mean', color = 'black', alpha = 0.7)
-            pylab.plot(red_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.7)
+            if options.stats:
+                # bin values using a dictionary
+                _, binedge = numpy.histogram(redshift, bins = binnum)
+                bin_dict = defaultdict(lambda: [])
+                for i in list(zip(redshift, res)):
+                    bin_mid, val = [((a+b)/2, i[1]) for (a, b) in list(zip(binedge, binedge[1:])) if a <= i[0] <= b][0]
+                    bin_dict[bin_mid].append(val)
+                # calculate mean lines
+                x_mid = [(a+b)/2 for (a, b) in list(zip(binedge, binedge[1:]))]
+                red_mid, l, m, u = [], [], [], []
+                for i in x_mid:
+                    vals = bin_dict[i]
+                    # only extend the mean lines if there are more than 30 data points
+                    if len(vals) >= 30:
+                        red_mid.append(i)
+                        l.append(numpy.percentile(vals, 16))
+                        m.append(numpy.percentile(vals, 50))
+                        u.append(numpy.percentile(vals, 84))
+                # plot
+                pylab.plot(red_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.7)
+                pylab.plot(red_mid, m, label = 'mean', color = 'black', alpha = 0.7)
+                pylab.plot(red_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.7)
             pylab.xlabel(r'$z$', size = 15)
             pylab.ylabel(name, size = 15)
             pylab.show()
@@ -175,7 +176,7 @@ if __name__ == '__main__':
                 res = [g for g in res if g != float('-inf')]
             plt.hist(res, bins = binnum,  edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
             if options.stats:
-                # clusterfuck of stats
+                # calculates a lot of stats
                 mean = numpy.mean(res)
                 median = numpy.median(res)
                 std = numpy.std(res)

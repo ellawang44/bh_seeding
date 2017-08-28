@@ -4,6 +4,7 @@ redshift = None
 M_stellar = None
 M_dm = None
 M_bh = None
+M_g = None
 x_coord = None
 y_coord = None
 z_coord = None

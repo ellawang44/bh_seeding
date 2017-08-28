@@ -25,6 +25,11 @@ class Trace (GalaxyData):
             obj = init.M_bh
             err = 'black holes'
             file_name = 'bh'
+        elif init.M_g is not None:
+            var = 10 # gas mass
+            obj = init.M_g
+            err = 'gas'
+            file_name = 'gas'
         else:
             var = None
 
