@@ -21,6 +21,12 @@ parser = OptionParser()
 
 # ks test keromerogh's speamouth test?
 # label the distribution numbers
+# add error bars to the plot (possion error, sqrt(n))
+# legend to the stats
+# table for stats
+# Gaussian expansion including skewness and kurtosis
+# 3 SF for accuracy
+
 
 # reading in different files
 parser.add_option('-f', '--file', type = 'string', dest = 'file', help = 'Determines the input file. Can also parse galaxy data.')
@@ -64,6 +70,7 @@ if __name__ == '__main__':
     # changes the bin sizes used in histograms
     if options.bin:
         binnum = options.bin
+
 
     # sets the variable and name associated with the wanted data
     var, name = { 'redshift' : (0, 'redshift'),
