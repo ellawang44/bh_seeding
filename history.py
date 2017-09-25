@@ -93,8 +93,15 @@ class History (GalaxyData):
                 #evolution(prev_key, prev_gals[0], prev_evo)
         # if there is more than 1 previous galaxy
         result = []
-        print(prev_gals)
-        print(key, galaxy.previous)
+        # could be empty because oh god why
+
+
+
+
+
+
+
+
         m_prev_gal = [g for g in prev_gals if g.current == galaxy.previous][0]
         result.extend(self.evolution(prev_key, m_prev_gal, prev_evo))
         prev_gals.remove(m_prev_gal)

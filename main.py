@@ -7,6 +7,7 @@ import init
 import numpy
 from collections import defaultdict
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from scipy import stats
 from optparse import OptionParser
 from matplotlib import rc
@@ -20,9 +21,6 @@ plt.rc('font', family='serif')
 parser = OptionParser()
 
 # ks test keromerogh's speamouth test?
-# label the distribution numbers
-# add error bars to the plot (possion error, sqrt(n))
-# legend to the stats
 # table for stats
 # Gaussian expansion including skewness and kurtosis
 # 3 SF for accuracy
@@ -71,7 +69,6 @@ if __name__ == '__main__':
     if options.bin:
         binnum = options.bin
 
-
     # sets the variable and name associated with the wanted data
     var, name = { 'redshift' : (0, 'redshift'),
                  'xcoord' : (4, 'x-coordinates'),
@@ -83,6 +80,10 @@ if __name__ == '__main__':
                  'gas' : (10, r'log $M_{\rm g}$ [\rm M_{\odot}]'),
                  None : (None, None)
             }[options.data]
+
+    # define a sig fig rounding fuction
+    def round_sf(x, n):
+        return float(('%.' + str(int(n)) + 'g') %  x)
 
     # graph for a single frame in the simulation
     galaxies = None
@@ -99,7 +100,10 @@ if __name__ == '__main__':
         # filter out -inf
         if var == 9:
             galaxies = [i for i in galaxies if i != float('-inf')]
-        plt.hist(galaxies, bins = binnum,  edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
+        height, binedge = numpy.histogram(galaxies, bins = binnum)
+        binwidth = (max(galaxies) - min(galaxies))/binnum
+        error = [numpy.sqrt(i) for i in height]
+        plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
         if options.stats:
             # calculates a lot of stats
             mean = numpy.mean(galaxies)
@@ -107,13 +111,9 @@ if __name__ == '__main__':
             std = numpy.std(galaxies)
             skew = stats.skew(galaxies, bias = False)
             kurt = stats.kurtosis(galaxies)
-            print('mean: ' + str(mean) + '\n' +
-            'median: ' + str(median) + '\n' +
-            'standard deviation: ' + str(std) + '\n' +
-            'skewness: ' + str(skew) + '\n' +
-            'kurtosis: ' + str(kurt))
+            plt.figtext(0.67, 0.73, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'})
+            print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
             x = numpy.arange(min(galaxies), max(galaxies), 0.001)
-            binwidth = (max(galaxies) - min(galaxies))/binnum
             plt.plot(x, len(galaxies)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
         pylab.xlabel(name, size = 15)
         pylab.ylabel(r'$N$', size = 15)
@@ -181,7 +181,10 @@ if __name__ == '__main__':
             # if black holes, filter out -inf
             if var == 9:
                 res = [g for g in res if g != float('-inf')]
-            plt.hist(res, bins = binnum,  edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
+            height, binedge = numpy.histogram(res, bins = binnum)
+            binwidth = (max(res) - min(res))/binnum
+            error = [numpy.sqrt(i) for i in height]
+            plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
             if options.stats:
                 # calculates a lot of stats
                 mean = numpy.mean(res)
@@ -189,13 +192,9 @@ if __name__ == '__main__':
                 std = numpy.std(res)
                 skew = stats.skew(res)
                 kurt = stats.kurtosis(res)
-                print('mean: ' + str(mean) + '\n' +
-                'median: ' + str(median) + '\n' +
-                'standard deviation: ' + str(std) + '\n' +
-                'skewness: ' + str(skew) + '\n' +
-                'kurtosis: ' + str(kurt))
+                plt.figtext(0.67, 0.73, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'})
+                print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
                 x = numpy.arange(min(res), max(res), 0.001)
-                binwidth = (max(res) - min(res))/binnum
                 plt.plot(x, len(res)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
             pylab.xlabel(name, size = 15)
             pylab.ylabel(r'$N$', size = 15)
