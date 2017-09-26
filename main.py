@@ -2,6 +2,8 @@ import read
 import trace
 import redshift
 import snapshot
+import distance
+import present
 import pylab
 import init
 import numpy
@@ -21,7 +23,6 @@ plt.rc('font', family='serif')
 parser = OptionParser()
 
 # ks test keromerogh's speamouth test?
-# table for stats
 # Gaussian expansion including skewness and kurtosis
 # 3 SF for accuracy
 
@@ -38,14 +39,21 @@ parser.add_option('-s', '--snapshot', type = 'int', dest = 'snapshot', help = 'T
 parser.add_option('--data', type = 'string', dest = 'data', help = 'Determines what data to pick from the galaxy. The possible inputs are "redshift", "xcoord", "ycoord", "zcoord", "stellar", "dark matter" and "black hole".')
 
 # sets the threshold mass
-parser.add_option('-m', '--stellar', type = 'float', dest = 'stellar', help = 'Sets the threshold stellar mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--downsizing" to plot the redshift at which the galaxies first cross over the threshold vs the aspect of the galaxy selected by the data tag. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
+parser.add_option('-m', '--stellar', type = 'float', dest = 'stellar', help = 'Sets the threshold stellar mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--xaxis" and "--yaxis" to plot a scatter plot of chosen data for each axis. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
 
-parser.add_option('-d', '--darkmatter', type = 'float', dest = 'darkmatter', help = 'Sets the threshold dark matter halo mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--downsizing" to plot the redshift at which the galaxies first cross over the threshold vs the aspect of the galaxy selected by the data tag. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
+parser.add_option('-d', '--darkmatter', type = 'float', dest = 'darkmatter', help = 'Sets the threshold dark matter halo mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--xaxis" and "--yaxis" to plot a scatter plot of chosen data for each axis. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
 
-parser.add_option('-b', '--blackhole', type = 'float', dest = 'blackhole', help = 'Sets the threshold black hole mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--downsizing" to plot the redshift at which the galaxies first cross over the threshold vs the aspect of the galaxy selected by the data tag. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
+parser.add_option('-b', '--blackhole', type = 'float', dest = 'blackhole', help = 'Sets the threshold black hole mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--xaxis" and "--yaxis" to plot a scatter plot of chosen data for each axis. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
 
-# takes the present day image of the galaxies of interest
-parser.add_option('--downsizing', action = 'store_true', dest = 'downsizing', help = 'Takes the selected data and outputs a scatter plot of the redshift along the x-axis and the data on the y-axis. Used together with "--data" and either "--stellar", "--darkmatter" or "--blackhole".')
+parser.add_option('-g', '--gas', type = 'float', dest = 'blackhole', help = 'Sets the threshold gas mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--xaxis" and "--yaxis" to plot a scatter plot of chosen data for each axis. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
+
+# takes the present day s5 data for the galaxies of interest
+parser.add_option('--s5', action = 'store_true', dest = 's5', help = 'Takes the selected data and outputs a scatter plot of the mass (object selected with the "--data" flag) along the x-axis and the data on the present day s5 distance. Used together with "--data" and either "--stellar", "--darkmatter" or "--blackhole".')
+
+# determines what to plot on the x and y axis for the galaxies of interest
+parser.add_option('-x', '--xaxis', type = 'string', dest = 'xaxis', help = 'Determines what to plot on the x-axis for the galaxy of interst. Used with "-stellar", "--darkmatter", "--blackhole", and "--gas".')
+
+parser.add_option('-y', '--yaxis', type = 'string', dest = 'yaxis', help = 'Determines what to plot on the y-axis for the galaxy of interst. Used with "-stellar", "--darkmatter", "--blackhole", and "--gas".')
 
 # print file containing galaxies of interest
 parser.add_option('--txt', action = 'store_true', dest = 'txt', help = 'outputs a file containing the galaxy number of galaxies that cross over the threshold and the snapshot number when they cross over. Used together with "--data" and either "--stellar", "--darkmatter" or "--blackhole".')
@@ -70,7 +78,7 @@ if __name__ == '__main__':
         binnum = options.bin
 
     # sets the variable and name associated with the wanted data
-    var, name = { 'redshift' : (0, 'redshift'),
+    vartable = { 'redshift' : (0, 'z'),
                  'xcoord' : (4, 'x-coordinates'),
                  'ycoord' : (5, 'y-coordinates'),
                  'zcoord' : (6, 'z-coordinates'),
@@ -79,7 +87,10 @@ if __name__ == '__main__':
                  'black hole' : (9, r'log $M_{\rm BH}$ [\rm M_{\odot}]'),
                  'gas' : (10, r'log $M_{\rm g}$ [\rm M_{\odot}]'),
                  None : (None, None)
-            }[options.data]
+            }
+    var, name = vartable[options.data]
+    xvar, xname = vartable[options.xaxis]
+    yvar, yname = vartable[options.yaxis]
 
     # define a sig fig rounding fuction
     def round_sf(x, n):
@@ -136,46 +147,90 @@ if __name__ == '__main__':
     elif options.blackhole:
         init.M_bh = options.blackhole
         galaxies2 = trace.Trace(init.file_name).data
+    elif options.gas:
+        init.M_g = options.gas
+        galaxies2 = trace.Trace(init.file_name).data
 
     if galaxies2 is not None:
-        if options.data == 'redshift':
-            res = [g[0][var] for g in galaxies2]
-        else:
-            res = [g[1][var] for g in galaxies2]
+        # determines the mass data to take if producing histogram
+        if options.data:
+            if options.data == 'redshift':
+                res = [g[0][var] for g in galaxies2]
+            else:
+                res = [g[1][var] for g in galaxies2]
+
         # produces scatter plot
-        if options.downsizing:
-            redshift = [g[0].redshift for g in galaxies2]
-            # if black holes, filter out -inf
-            if var == 9:
-                filt = [g for g in zip(redshift, res) if g[1] != float('-inf')]
-                redshift = [g[0] for g in filt]
-                res = [g[1] for g in filt]
-            pylab.scatter(redshift, res, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
+        if options.xaxis and options.yaxis:
+            if options.xaxis == 'redshift':
+                xaxis = [g[0].redshift for g in galaxies2]
+            else:
+                xaxis = [g[1][xvar] for g in galaxies2]
+            if options.yaxis == 'redshift':
+                yaxis = [g[0].redshift for g in galaxies2]
+            else:
+                yaxis = [g[1][yvar] for g in galaxies2]
+            # black holes can have mass of -inf
+            if xvar == 9:
+                xaxis,yaxis = zip(*[(x, y) for (x, y) in zip(xaxis, yaxis) if x != float('-inf')])
+            if yvar == 9:
+                xaxis,yaxis = zip(*[(x, y) for (x, y) in zip(xaxis, yaxis) if y != float('-inf')])
+            pylab.scatter(xaxis, yaxis, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
             if options.stats:
                 # bin values using a dictionary
-                _, binedge = numpy.histogram(redshift, bins = binnum)
+                _, binedge = numpy.histogram(xaxis, bins = binnum)
                 bin_dict = defaultdict(lambda: [])
-                for i in list(zip(redshift, res)):
+                for i in list(zip(xaxis, yaxis)):
                     bin_mid, val = [((a+b)/2, i[1]) for (a, b) in list(zip(binedge, binedge[1:])) if a <= i[0] <= b][0]
                     bin_dict[bin_mid].append(val)
                 # calculate mean lines
-                x_mid = [(a+b)/2 for (a, b) in list(zip(binedge, binedge[1:]))]
-                red_mid, l, m, u = [], [], [], []
-                for i in x_mid:
+                mid = [(a+b)/2 for (a, b) in list(zip(binedge, binedge[1:]))]
+                x_mid, l, m, u = [], [], [], []
+                for i in mid:
                     vals = bin_dict[i]
                     # only extend the mean lines if there are more than 30 data points
                     if len(vals) >= 30:
-                        red_mid.append(i)
+                        x_mid.append(i)
                         l.append(numpy.percentile(vals, 16))
                         m.append(numpy.percentile(vals, 50))
                         u.append(numpy.percentile(vals, 84))
                 # plot
-                pylab.plot(red_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.7)
-                pylab.plot(red_mid, m, label = 'mean', color = 'black', alpha = 0.7)
-                pylab.plot(red_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.7)
-            pylab.xlabel(r'$z$', size = 15)
-            pylab.ylabel(name, size = 15)
+                pylab.plot(x_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.7)
+                pylab.plot(x_mid, m, label = 'mean', color = 'black', alpha = 0.7)
+                pylab.plot(x_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.7)
+            pylab.xlabel(xname, size = 15)
+            pylab.ylabel(yname, size = 15)
             pylab.show()
+
+        # produces s5 scatter plots
+        elif options.s5:
+            # initiate files
+            present = present.Present(init.file_name)
+            distance = distance.Distance(init.file_name)
+            # find the present day galaxy of the galaxies of interest
+            pres_day_gal = [present.present(gal[0], gal[1]) for gal in galaxies2]
+            # filter out all the galaxies that don't exist present day anymore
+            galaxies = [(pres_gal, gal) for (pres_gal, gal) in zip(pres_day_gal, galaxies2) if pres_gal is not None]
+            pres_gals = [gal[0] for gal in galaxies]
+            gals = [gal[1] for gal in galaxies]
+            # get the s5 distance of the present day galaxies
+            s5 = [distance.s5((0, 1000), gal) for gal in pres_gals]
+            # filter out all the galaxies that don't have an s5 distance
+            data = [(gal, s5_dist) for (gal, s5_dist) in zip(gals, s5) if s5_dist is not None]
+            s5 = [d[1] for d in data]
+            if var == 0:
+                mass_object = [d[0][0][var] for d in data]
+            else:
+                mass_object = [d[0][1][var] for d in data]
+            if var == 9:
+                data = [(mass, s5_dist) for (mass, s5_dist) in zip(mass_objects, s5) if mass != float('-inf')]
+                s5 = [d[1] for d in data]
+                mass_objects = [d[0] for d in data]
+            # plot
+            pylab.scatter(mass_object, s5, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
+            pylab.xlabel(name, size = 15)
+            pylab.ylabel('s5', size = 15)
+            pylab.show()
+
         # produces histogram
         else:
             # if black holes, filter out -inf
@@ -198,6 +253,4 @@ if __name__ == '__main__':
                 plt.plot(x, len(res)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
             pylab.xlabel(name, size = 15)
             pylab.ylabel(r'$N$', size = 15)
-            # pylab.xticks(size = 12)
-            # pylab.yticks(size = 12)
             pylab.show()

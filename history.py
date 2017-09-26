@@ -50,14 +50,6 @@ class History (GalaxyData):
             region = galaxy_list[:(galaxy_list.index(last)+1)]
             return region
 
-    def present(self, key, galaxy, threshold, var):
-        evol = self.m_evolution(key, galaxy, threshold, var)
-        if evol is not None:
-            mid = self.midpoint(evol, threshold, var)
-            if mid is not None:
-                return (galaxy, mid)
-        return None
-
     def preimage(self, key, galaxy):
         # get previous galaxies that are the pre image of the input galaxy
         keys = self.read_data.list_of_keys

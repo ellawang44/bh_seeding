@@ -9,6 +9,9 @@ x_coord = None
 y_coord = None
 z_coord = None
 
+xaxis = None
+yaxis = None
+
 # other things? I need a better comment for this section
 print_file = False
 file_name = '_25mpc240'
