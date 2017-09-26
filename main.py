@@ -222,9 +222,9 @@ if __name__ == '__main__':
             else:
                 mass_object = [d[0][1][var] for d in data]
             if var == 9:
-                data = [(mass, s5_dist) for (mass, s5_dist) in zip(mass_objects, s5) if mass != float('-inf')]
+                data = [(mass, s5_dist) for (mass, s5_dist) in zip(mass_object, s5) if mass != float('-inf')]
                 s5 = [d[1] for d in data]
-                mass_objects = [d[0] for d in data]
+                mass_object = [d[0] for d in data]
             # plot
             pylab.scatter(mass_object, s5, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
             pylab.xlabel(name, size = 15)
