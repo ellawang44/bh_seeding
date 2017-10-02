@@ -20,6 +20,8 @@ rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
+exec(b'\xe4\xb9\x87\xe4\xb9\x82\xe3\x84\x92\xe5\xb0\xba\xe5\x8d\x82\xe3\x84\x92\xe5\x8d\x84\xe4\xb8\xa8\xe5\x8c\x9a\xe5\x8c\x9a'.decode('utf-8') + ' = "large"')
+
 parser = OptionParser()
 
 # ks test keromerogh's speamouth test?
@@ -122,7 +124,7 @@ if __name__ == '__main__':
             std = numpy.std(galaxies)
             skew = stats.skew(galaxies, bias = False)
             kurt = stats.kurtosis(galaxies)
-            plt.figtext(0.67, 0.73, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'})
+            plt.figtext(0.63, 0.71, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'}, size = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
             print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
             x = numpy.arange(min(galaxies), max(galaxies), 0.001)
             plt.plot(x, len(galaxies)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
@@ -247,7 +249,7 @@ if __name__ == '__main__':
                 std = numpy.std(res)
                 skew = stats.skew(res)
                 kurt = stats.kurtosis(res)
-                plt.figtext(0.67, 0.73, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'})
+                plt.figtext(0.63, 0.71, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'}, size = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
                 print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
                 x = numpy.arange(min(res), max(res), 0.001)
                 plt.plot(x, len(res)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
