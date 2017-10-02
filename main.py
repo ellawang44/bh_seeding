@@ -20,7 +20,7 @@ rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-exec(b'\xe4\xb9\x87\xe4\xb9\x82\xe3\x84\x92\xe5\xb0\xba\xe5\x8d\x82\xe3\x84\x92\xe5\x8d\x84\xe4\xb8\xa8\xe5\x8c\x9a\xe5\x8c\x9a'.decode('utf-8') + ' = "large"')
+exec(b'\xe4\xb9\x87\xe4\xb9\x82\xe3\x84\x92\xe5\xb0\xba\xe5\x8d\x82\xe3\x84\x92\xe5\x8d\x84\xe4\xb8\xa8\xe5\x8c\x9a\xe5\x8c\x9a'.decode('utf-8') + ' = 2')
 
 parser = OptionParser()
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
             std = numpy.std(galaxies)
             skew = stats.skew(galaxies, bias = False)
             kurt = stats.kurtosis(galaxies)
-            plt.figtext(0.63, 0.71, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'}, size = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
+            plt.figtext(0.63, 0.71, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'}, size = "large")
             print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
             x = numpy.arange(min(galaxies), max(galaxies), 0.001)
             plt.plot(x, len(galaxies)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
@@ -196,9 +196,9 @@ if __name__ == '__main__':
                         m.append(numpy.percentile(vals, 50))
                         u.append(numpy.percentile(vals, 84))
                 # plot
-                pylab.plot(x_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.7)
-                pylab.plot(x_mid, m, label = 'mean', color = 'black', alpha = 0.7)
-                pylab.plot(x_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.7)
+                pylab.plot(x_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
+                pylab.plot(x_mid, m, label = 'mean', color = 'black', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
+                pylab.plot(x_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
             pylab.xlabel(xname, size = 15)
             pylab.ylabel(yname, size = 15)
             pylab.show()
@@ -230,7 +230,7 @@ if __name__ == '__main__':
             # plot
             pylab.scatter(mass_object, s5, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
             pylab.xlabel(name, size = 15)
-            pylab.ylabel('s5', size = 15)
+            pylab.ylabel(r'$s_5$', size = 15)
             pylab.show()
 
         # produces histogram
@@ -249,7 +249,7 @@ if __name__ == '__main__':
                 std = numpy.std(res)
                 skew = stats.skew(res)
                 kurt = stats.kurtosis(res)
-                plt.figtext(0.63, 0.71, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'}, size = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
+                plt.figtext(0.63, 0.71, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'}, size = "large")
                 print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
                 x = numpy.arange(min(res), max(res), 0.001)
                 plt.plot(x, len(res)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
