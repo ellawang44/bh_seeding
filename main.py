@@ -11,6 +11,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from scipy import stats
+import os
 from optparse import OptionParser
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -20,7 +21,7 @@ rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-exec(b'\xe4\xb9\x87\xe4\xb9\x82\xe3\x84\x92\xe5\xb0\xba\xe5\x8d\x82\xe3\x84\x92\xe5\x8d\x84\xe4\xb8\xa8\xe5\x8c\x9a\xe5\x8c\x9a'.decode('utf-8') + ' = 2')
+exec(b'\xe4\xb9\x87\xe4\xb9\x82\xe3\x84\x92\xe5\xb0\xba\xe5\x8d\x82\xe3\x84\x92\xe5\x8d\x84\xe4\xb8\xa8\xe5\x8c\x9a\xe5\x8c\x9a'.decode('utf-8') + ' = 3')
 
 parser = OptionParser()
 
@@ -38,7 +39,7 @@ parser.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 
 parser.add_option('-s', '--snapshot', type = 'int', dest = 'snapshot', help = 'Takes the data for the specific snapshot. Needs to be used in conjuncture with "--data". The bin size of the histogram can be changed with "--bin", the default is 100.')
 
 # takes out the required data type
-parser.add_option('--data', type = 'string', dest = 'data', help = 'Determines what data to pick from the galaxy. The possible inputs are "redshift", "xcoord", "ycoord", "zcoord", "stellar", "dark matter" and "black hole".')
+parser.add_option('--data', type = 'string', dest = 'data', help = 'Determines what data to pick from the galaxy. The possible inputs are "z", "xcoord", "ycoord", "zcoord", "stellar", "dm", "bh", and "gas".')
 
 # sets the threshold mass
 parser.add_option('-m', '--stellar', type = 'float', dest = 'stellar', help = 'Sets the threshold stellar mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--xaxis" and "--yaxis" to plot a scatter plot of chosen data for each axis. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
@@ -72,6 +73,7 @@ if __name__ == '__main__':
     # sets the correct file to read in
     if options.file:
         init.file_name = options.file
+        f2 = '_2'
 
     read_data = read.FileData(init.file_name)
     binnum = 100 # default number of bins
@@ -80,14 +82,14 @@ if __name__ == '__main__':
         binnum = options.bin
 
     # sets the variable and name associated with the wanted data
-    vartable = { 'redshift' : (0, 'z'),
+    vartable = { 'z' : (0, 'z'),
                  'xcoord' : (4, 'x-coordinates'),
                  'ycoord' : (5, 'y-coordinates'),
                  'zcoord' : (6, 'z-coordinates'),
-                 'stellar' : (7, r'log $M_{*}$ [\rm{M}_{\odot}]'),
-                 'dark matter' : (8, r'log $M_{\rm DM}$ [\rm{M}_{\odot}]'),
-                 'black hole' : (9, r'log $M_{\rm BH}$ [\rm M_{\odot}]'),
-                 'gas' : (10, r'log $M_{\rm g}$ [\rm M_{\odot}]'),
+                 'stellar' : (7, r'\log M_{*}\, [\rm{M}_{\odot}]'),
+                 'dm' : (8, r'\log M_{\rm DM}\, [\rm{M}_{\odot}]'),
+                 'bh' : (9, r'\log M_{\rm BH}\, [\rm M_{\odot}]'),
+                 'gas' : (10, r'\log M_{\rm g}\, [\rm M_{\odot}]'),
                  None : (None, None)
             }
     var, name = vartable[options.data]
@@ -98,16 +100,22 @@ if __name__ == '__main__':
     def round_sf(x, n):
         return float(('%.' + str(int(n)) + 'g') %  x)
 
+    # if txt output is wanted
+    if options.txt:
+        init.print_file = True
+
     # graph for a single frame in the simulation
     galaxies = None
     if options.snapshot:
         init.snapshot = options.snapshot
         key = snapshot.Snapshot(init.file_name).key
         galaxies = read_data.galaxy_data[key]
+        fname = 'snapshot'
     if options.redshift or options.redshift == 0:
         init.redshift = options.redshift
         key = redshift.Redshift(init.file_name).key
         galaxies = read_data.galaxy_data[key]
+        fname = 'z'
     if galaxies is not None:
         galaxies = [g[var] for g in galaxies]
         # filter out -inf
@@ -124,50 +132,54 @@ if __name__ == '__main__':
             std = numpy.std(galaxies)
             skew = stats.skew(galaxies, bias = False)
             kurt = stats.kurtosis(galaxies)
-            plt.figtext(0.63, 0.71, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'}, size = "large")
+            figure_text = "$\\langle " + name + " \\rangle: " + str(round_sf(mean, 3)) + "$\n$" + "\\sigma: " + str(round_sf(std, 3)) + '$\n$' + "\\mathcal{S}: " + str(round_sf(skew, 3)) + '$\n$' + "\\mathcal{K} : " + str(round_sf(kurt, 3)) + "$"
+            plt.figtext(0.59, 0.68, figure_text, bbox = {'facecolor':'white'}, size = "large")
             print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
             x = numpy.arange(min(galaxies), max(galaxies), 0.001)
             plt.plot(x, len(galaxies)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
-        pylab.xlabel(name, size = 15)
+        pylab.xlabel('$' + name + '$', size = 15)
         pylab.ylabel(r'$N$', size = 15)
         pylab.xticks(size = 15)
         pylab.yticks(size = 15)
-        pylab.show()
-
-    # if txt output is wanted
-    if options.txt:
-        init.print_file = True
+        if options.file:
+            plt.savefig('../report/' + fname + '_' + options.data + f2 + '.eps', format = 'eps')
+        else:
+            plt.savefig('../report/' + fname + '_' + options.data + '.eps', format = 'eps')
 
     # graph for tracing the mass of an object in a galaxy
     galaxies2 = None
     if options.stellar:
         init.M_stellar = options.stellar
         galaxies2 = trace.Trace(init.file_name).data
+        fname = 'stellar'
     elif options.darkmatter:
         init.M_dm = options.darkmatter
         galaxies2 = trace.Trace(init.file_name).data
+        fname = 'dm'
     elif options.blackhole:
         init.M_bh = options.blackhole
         galaxies2 = trace.Trace(init.file_name).data
+        fname = 'bh'
     elif options.gas:
         init.M_g = options.gas
         galaxies2 = trace.Trace(init.file_name).data
+        fname = 'gas'
 
     if galaxies2 is not None:
         # determines the mass data to take if producing histogram
         if options.data:
-            if options.data == 'redshift':
+            if options.data == 'z':
                 res = [g[0][var] for g in galaxies2]
             else:
                 res = [g[1][var] for g in galaxies2]
 
         # produces scatter plot
         if options.xaxis and options.yaxis:
-            if options.xaxis == 'redshift':
+            if options.xaxis == 'z':
                 xaxis = [g[0].redshift for g in galaxies2]
             else:
                 xaxis = [g[1][xvar] for g in galaxies2]
-            if options.yaxis == 'redshift':
+            if options.yaxis == 'z':
                 yaxis = [g[0].redshift for g in galaxies2]
             else:
                 yaxis = [g[1][yvar] for g in galaxies2]
@@ -199,9 +211,14 @@ if __name__ == '__main__':
                 pylab.plot(x_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
                 pylab.plot(x_mid, m, label = 'mean', color = 'black', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
                 pylab.plot(x_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
-            pylab.xlabel(xname, size = 15)
-            pylab.ylabel(yname, size = 15)
-            pylab.show()
+            pylab.xlabel('$' + xname + '$', size = 15)
+            pylab.ylabel('$' + yname + '$', size = 15)
+            pylab.xticks(size = 15)
+            pylab.yticks(size = 15)
+            if options.file:
+                plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + f2 + '.eps', format = 'eps')
+            else:
+                plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + '.eps', format = 'eps')
 
         # produces s5 scatter plots
         elif options.s5:
@@ -229,9 +246,14 @@ if __name__ == '__main__':
                 mass_object = [d[0] for d in data]
             # plot
             pylab.scatter(mass_object, s5, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
-            pylab.xlabel(name, size = 15)
+            pylab.xlabel('$' + name + '$', size = 15)
             pylab.ylabel(r'$s_5$', size = 15)
-            pylab.show()
+            pylab.xticks(size = 15)
+            pylab.yticks(size = 15)
+            if options.file:
+                plt.savefig('../report/' + fname + '_s5' + f2 + '.eps', format = 'eps')
+            else:
+                plt.savefig('../report/' + fname + '_s5' + '.eps', format = 'eps')
 
         # produces histogram
         else:
@@ -249,10 +271,16 @@ if __name__ == '__main__':
                 std = numpy.std(res)
                 skew = stats.skew(res)
                 kurt = stats.kurtosis(res)
-                plt.figtext(0.63, 0.71, r'$\langle$' + name + r'\rangle' + ': ' + str(round_sf(mean, 3)) + '\n' + r'$\sigma$: ' + str(round_sf(std, 3)) + '\n' + r'$\mathcal{S}$: ' + str(round_sf(skew, 3)) + '\n' + r'$\mathcal{K}$: ' + str(round_sf(kurt, 3)), bbox = {'facecolor':'white'}, size = "large")
+                figure_text = "$\\langle " + name + " \\rangle: " + str(round_sf(mean, 3)) + "$\n$" + "\\sigma: " + str(round_sf(std, 3)) + '$\n$' + "\\mathcal{S}: " + str(round_sf(skew, 3)) + '$\n$' + "\\mathcal{K} : " + str(round_sf(kurt, 3)) + "$"
+                plt.figtext(0.59, 0.68, figure_text, bbox = {'facecolor':'white'}, size = 'x-large')
                 print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
                 x = numpy.arange(min(res), max(res), 0.001)
                 plt.plot(x, len(res)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
-            pylab.xlabel(name, size = 15)
+            pylab.xlabel("$" + name + "$", size = 15)
             pylab.ylabel(r'$N$', size = 15)
-            pylab.show()
+            pylab.xticks(size = 15)
+            pylab.yticks(size = 15)
+            if options.file:
+                plt.savefig('../report/' + fname + '_' + options.data + f2 + '.eps', format = 'eps')
+            else:
+                plt.savefig('../report/' + fname + '_' + options.data + '.eps', format = 'eps')

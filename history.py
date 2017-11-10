@@ -2,7 +2,7 @@ from read import GalaxyData
 
 class History (GalaxyData):
     def m_preimage(self, key, galaxy):
-        # get the biggest galaxy in te preimage of the input galaxy
+        # get the biggest galaxy in the preimage of the input galaxy
         keys = self.read_data.list_of_keys
         if key == keys[-1]:
             return None
