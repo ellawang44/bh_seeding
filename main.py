@@ -129,7 +129,7 @@ if __name__ == '__main__':
             # calculates a lot of stats
             mean = numpy.mean(galaxies)
             median = numpy.median(galaxies)
-            std = numpy.std(galaxies)
+            std = numpy.std(galaxies)numpy
             skew = stats.skew(galaxies, bias = False)
             kurt = stats.kurtosis(galaxies)
             figure_text = "$\\langle " + name + " \\rangle: " + str(round_sf(mean, 3)) + "$\n$" + "\\sigma: " + str(round_sf(std, 3)) + '$\n$' + "\\mathcal{S}: " + str(round_sf(skew, 3)) + '$\n$' + "\\mathcal{K} : " + str(round_sf(kurt, 3)) + "$"
