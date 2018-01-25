@@ -1,5 +1,5 @@
 from read import GalaxyData
-import numpy
+import numpy as np
 
 class Distance (GalaxyData):
     def s5(self, key, galaxy):
@@ -15,5 +15,5 @@ class Distance (GalaxyData):
         x = abs(gal.xcoord - galaxy.xcoord)
         y = abs(gal.ycoord - galaxy.ycoord)
         z = abs(gal.zcoord - galaxy.zcoord)
-        dist = numpy.sqrt(min(x, sim_box_size - x)**2 + min(y, sim_box_size - y)**2 + min(z, sim_box_size - z)**2)
+        dist = np.sqrt(min(x, sim_box_size - x)**2 + min(y, sim_box_size - y)**2 + min(z, sim_box_size - z)**2)
         return dist
