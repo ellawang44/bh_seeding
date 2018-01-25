@@ -174,7 +174,7 @@ if __name__ == '__main__':
             if options.data == 'z':
                 res = [g[0][var] for g in galaxies2]
             elif options.data == 'cond':
-                res = [g[1][11]*2 - g[1][12] for g in galaxies2]
+                res = [g[1][11]*2 + g[1][12] for g in galaxies2]
             else:
                 res = [g[1][var] for g in galaxies2]
 
@@ -265,7 +265,6 @@ if __name__ == '__main__':
             # if black holes, filter out -inf
             if var == 9 or var == 11 or var == 12:
                 res = [g for g in res if g != float('-inf') and not numpy.isnan(g)]
-            [print(i) for i in res]
             height, binedge = numpy.histogram(res, bins = binnum)
             binwidth = (max(res) - min(res))/binnum
             error = [numpy.sqrt(i) for i in height]
