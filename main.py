@@ -6,7 +6,7 @@ import distance
 import present
 import pylab
 import init
-import numpy as np
+import numpy
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -39,7 +39,7 @@ parser.add_option('-z', '--redshift', type = 'float', dest = 'redshift', help = 
 parser.add_option('-s', '--snapshot', type = 'int', dest = 'snapshot', help = 'Takes the data for the specific snapshot. Needs to be used in conjuncture with "--data". The bin size of the histogram can be changed with "--bin", the default is 100.')
 
 # takes out the required data type
-parser.add_option('--data', type = 'string', dest = 'data', help = 'Determines what data to pick from the galaxy. The possible inputs are "z", "xcoord", "ycoord", "zcoord", "stellar", "dm", "bh", and "gas".')
+parser.add_option('--data', type = 'string', dest = 'data', help = 'Determines what data to pick from the galaxy. The possible inputs are "z", "xcoord", "ycoord", "zcoord", "stellar", "dm", "bh", "gas", "acc", "rho", and "cond".')
 
 # sets the threshold mass
 parser.add_option('-m', '--stellar', type = 'float', dest = 'stellar', help = 'Sets the threshold stellar mass, galaxies that just pass above that threshold mass will be recorded. Use "--data" to determine what aspect of those galaxies to histogram. Use "--xaxis" and "--yaxis" to plot a scatter plot of chosen data for each axis. Use "--txt" to output a txt file containing the galaxy number of the galaxies that just pass above the threshold mass and the snapshot at which it occurs.')
@@ -90,6 +90,9 @@ if __name__ == '__main__':
                  'dm' : (8, r'\log M_{\rm DM}\, [\rm{M}_{\odot}]'),
                  'bh' : (9, r'\log M_{\rm BH}\, [\rm M_{\odot}]'),
                  'gas' : (10, r'\log M_{\rm g}\, [\rm M_{\odot}]'),
+                 'acc' : (11, r'\log \dot{M}_{\rm{acc}}\, [\rm M_{{\sun}/yr}]'),
+                 'rho' : (12, r'\log \rho\, [\rm km/m^3]'),
+                 'cond' : (12, r'\log \dot{M}_{\rm{acc}} / \rho \, [\rm M_{{\sun}/yr}^2 m^3/ km]'), # dodgey fix
                  None : (None, None)
             }
     var, name = vartable[options.data]
@@ -119,23 +122,23 @@ if __name__ == '__main__':
     if galaxies is not None:
         galaxies = [g[var] for g in galaxies]
         # filter out -inf
-        if var == 9:
+        if var == 9 or var == 11 or var == 12:
             galaxies = [i for i in galaxies if i != float('-inf')]
-        height, binedge = np.histogram(galaxies, bins = binnum)
+        height, binedge = numpy.histogram(galaxies, bins = binnum)
         binwidth = (max(galaxies) - min(galaxies))/binnum
-        error = [np.sqrt(i) for i in height]
+        error = [numpy.sqrt(i) for i in height]
         plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
         if options.stats:
             # calculates a lot of stats
-            mean = np.mean(galaxies)
-            median = np.median(galaxies)
-            std = np.std(galaxies)
+            mean = numpy.mean(galaxies)
+            median = numpy.median(galaxies)
+            std = numpy.std(galaxies)
             skew = stats.skew(galaxies, bias = False)
             kurt = stats.kurtosis(galaxies)
             figure_text = "$\\langle " + name + " \\rangle: " + str(round_sf(mean, 3)) + "$\n$" + "\\sigma: " + str(round_sf(std, 3)) + '$\n$' + "\\mathcal{S}: " + str(round_sf(skew, 3)) + '$\n$' + "\\mathcal{K} : " + str(round_sf(kurt, 3)) + "$"
             plt.figtext(0.59, 0.68, figure_text, bbox = {'facecolor':'white'}, size = "large")
             print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
-            x = np.arange(min(galaxies), max(galaxies), 0.001)
+            x = numpy.arange(min(galaxies), max(galaxies), 0.001)
             plt.plot(x, len(galaxies)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
         pylab.xlabel('$' + name + '$', size = 15)
         pylab.ylabel(r'$N$', size = 15)
@@ -170,6 +173,8 @@ if __name__ == '__main__':
         if options.data:
             if options.data == 'z':
                 res = [g[0][var] for g in galaxies2]
+            elif options.data == 'cond':
+                res = [g[1][11]*2 - g[1][12] for g in galaxies2]
             else:
                 res = [g[1][var] for g in galaxies2]
 
@@ -184,14 +189,14 @@ if __name__ == '__main__':
             else:
                 yaxis = [g[1][yvar] for g in galaxies2]
             # black holes can have mass of -inf
-            if xvar == 9:
+            if xvar == 9 or xvar == 11 or xavr == 12:
                 xaxis,yaxis = zip(*[(x, y) for (x, y) in zip(xaxis, yaxis) if x != float('-inf')])
-            if yvar == 9:
+            if yvar == 9 or yvar == 11 or yvar == 12:
                 xaxis,yaxis = zip(*[(x, y) for (x, y) in zip(xaxis, yaxis) if y != float('-inf')])
             pylab.scatter(xaxis, yaxis, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
             if options.stats:
                 # bin values using a dictionary
-                _, binedge = np.histogram(xaxis, bins = binnum)
+                _, binedge = numpy.histogram(xaxis, bins = binnum)
                 bin_dict = defaultdict(lambda: [])
                 for i in list(zip(xaxis, yaxis)):
                     bin_mid, val = [((a+b)/2, i[1]) for (a, b) in list(zip(binedge, binedge[1:])) if a <= i[0] <= b][0]
@@ -204,9 +209,9 @@ if __name__ == '__main__':
                     # only extend the mean lines if there are more than 30 data points
                     if len(vals) >= 30:
                         x_mid.append(i)
-                        l.append(np.percentile(vals, 16))
-                        m.append(np.percentile(vals, 50))
-                        u.append(np.percentile(vals, 84))
+                        l.append(numpy.percentile(vals, 16))
+                        m.append(numpy.percentile(vals, 50))
+                        u.append(numpy.percentile(vals, 84))
                 # plot
                 pylab.plot(x_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
                 pylab.plot(x_mid, m, label = 'mean', color = 'black', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
@@ -240,7 +245,7 @@ if __name__ == '__main__':
                 mass_object = [d[0][0][var] for d in data]
             else:
                 mass_object = [d[0][1][var] for d in data]
-            if var == 9:
+            if var == 9 or var == 11 or var == 12:
                 data = [(mass, s5_dist) for (mass, s5_dist) in zip(mass_object, s5) if mass != float('-inf')]
                 s5 = [d[1] for d in data]
                 mass_object = [d[0] for d in data]
@@ -258,28 +263,30 @@ if __name__ == '__main__':
         # produces histogram
         else:
             # if black holes, filter out -inf
-            if var == 9:
-                res = [g for g in res if g != float('-inf')]
-            height, binedge = np.histogram(res, bins = binnum)
+            if var == 9 or var == 11 or var == 12:
+                res = [g for g in res if g != float('-inf') and not numpy.isnan(g)]
+            [print(i) for i in res]
+            height, binedge = numpy.histogram(res, bins = binnum)
             binwidth = (max(res) - min(res))/binnum
-            error = [np.sqrt(i) for i in height]
+            error = [numpy.sqrt(i) for i in height]
             plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
             if options.stats:
                 # calculates a lot of stats
-                mean = np.mean(res)
-                median = np.median(res)
-                std = np.std(res)
+                mean = numpy.mean(res)
+                median = numpy.median(res)
+                std = numpy.std(res)
                 skew = stats.skew(res)
                 kurt = stats.kurtosis(res)
                 figure_text = "$\\langle " + name + " \\rangle: " + str(round_sf(mean, 3)) + "$\n$" + "\\sigma: " + str(round_sf(std, 3)) + '$\n$' + "\\mathcal{S}: " + str(round_sf(skew, 3)) + '$\n$' + "\\mathcal{K} : " + str(round_sf(kurt, 3)) + "$"
-                plt.figtext(0.59, 0.68, figure_text, bbox = {'facecolor':'white'}, size = 'x-large')
+                plt.figtext(0.15, 0.68, figure_text, bbox = {'facecolor':'white'}, size = 'x-large')
                 print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
-                x = np.arange(min(res), max(res), 0.001)
+                x = numpy.arange(min(res), max(res), 0.001)
                 plt.plot(x, len(res)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
             pylab.xlabel("$" + name + "$", size = 15)
             pylab.ylabel(r'$N$', size = 15)
             pylab.xticks(size = 15)
             pylab.yticks(size = 15)
+            pylab.show()
             if options.file:
                 plt.savefig('../report/' + fname + '_' + options.data + f2 + '.eps', format = 'eps')
             else:
