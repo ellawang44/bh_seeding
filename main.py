@@ -27,7 +27,6 @@ parser = OptionParser()
 
 # ks test keromerogh's speamouth test?
 # Gaussian expansion including skewness and kurtosis
-# 3 SF for accuracy
 
 
 # reading in different files

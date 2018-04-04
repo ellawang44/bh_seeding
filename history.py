@@ -96,8 +96,17 @@ class History (GalaxyData):
         # takes the midpoint of the section of the list that crosses the threshold
         galaxy = gal_evo[0][1]
         cross = [n for n,(cg,pg) in enumerate(zip(gal_evo,gal_evo[1:])) if cg[1][var] > threshold > pg[1][var]]
-        if len(cross) < 2:
-            return None
+        if len(cross) == 0:
+            #if gal_evo[-1][0][1] < 500:
+                #print(gal_evo[-1][0],gal_evo[-1][1][2])
+            # if they cross the threshold 0 times, then they are either above the threshold already or have never reached the threshold
+            if gal_evo[-1][1][var] > threshold:
+                return None#gal_evo[-1]
+            else:
+                return None
+        if len(cross) == 1:
+            # if they cross the threshold 1 times, then we should get the snapshot where it crosses the threshold.
+            return gal_evo[cross[0]]
         else:
             first, last = cross[0], cross[-1]
             # since mass can go down below the threshold, if this occurs in present day, we include it in the region (it'll eventually go back up)

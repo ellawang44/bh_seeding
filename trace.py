@@ -48,7 +48,7 @@ class Trace (GalaxyData):
                         if init.print_file:
                             f.write(str(int(key.snapshot)) + ' \t ' + str(int(galaxy.current)) + ' \n')
         else:
-            for galaxy in self.read_data.galaxy_data[(2.2336349, 700)]:
+            for galaxy in self.read_data.galaxy_data[keys[0]]:
                 evos = hist.evolution(keys[0], galaxy, [])
                 midpoints = [hist.midpoint(evo, obj, var) for evo in evos]
                 frames = [f for f in midpoints if f is not None]
