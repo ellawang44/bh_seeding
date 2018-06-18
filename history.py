@@ -53,6 +53,7 @@ class History (GalaxyData):
     def preimage(self, key, galaxy, check = False):
         # get previous galaxies that are the pre image of the input galaxy
         keys = self.read_data.list_of_keys
+        print(keys[-1])
         if key == keys[-1]:
             return []
         else:

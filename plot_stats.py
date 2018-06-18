@@ -1,7 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
 
-def gaussian(data):
+# define a sig fig rounding fuction
+def round_sf(x, n):
+    return float(('%.' + str(int(n)) + 'g') %  x)
+
+def gaussian(data, name, binwidth):
     '''calculates the mean, median, standard deviation, skewness, and kurtosis of the input data. These values are printed to the screen. A gaussian plot is produced.'''
     mean = np.mean(data)
     median = np.median(data)

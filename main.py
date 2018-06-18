@@ -11,7 +11,6 @@ import numpy as np
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from scipy import stats
 import os
 from optparse import OptionParser
 from matplotlib import rc
@@ -99,10 +98,6 @@ if __name__ == '__main__':
     xvar, xname = vartable[options.xaxis]
     yvar, yname = vartable[options.yaxis]
 
-    # define a sig fig rounding fuction
-    def round_sf(x, n):
-        return float(('%.' + str(int(n)) + 'g') %  x)
-
     # if txt output is wanted
     if options.txt:
         init.print_file = True
@@ -129,7 +124,7 @@ if __name__ == '__main__':
         error = [np.sqrt(i) for i in height]
         plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
         if options.stats:
-            plot_stats.gaussian(galaxies)
+            plot_stats.gaussian(galaxies, name, binwidth)
         pylab.xlabel('$' + name + '$', size = 15)
         pylab.ylabel(r'$N$', size = 15)
         pylab.xticks(size = 15)
@@ -261,7 +256,7 @@ if __name__ == '__main__':
             plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
             if options.stats:
                 # calculates a lot of stats
-                plot_stats.gaussian(res)
+                plot_stats.gaussian(res, name, binwidth)
             pylab.xlabel("$" + name + "$", size = 15)
             pylab.ylabel(r'$N$', size = 15)
             pylab.xticks(size = 15)
