@@ -50,7 +50,7 @@ class History (GalaxyData):
             region = galaxy_list[:(galaxy_list.index(last)+1)]
             return region
 
-    def preimage(self, key, galaxy):
+    def preimage(self, key, galaxy, check = False):
         # get previous galaxies that are the pre image of the input galaxy
         keys = self.read_data.list_of_keys
         if key == keys[-1]:
@@ -58,6 +58,8 @@ class History (GalaxyData):
         else:
             # index 0 returns current number, 1 returns next number
             galaxies = [prev_galaxy for prev_galaxy in self.read_data.galaxy_data[keys[keys.index(key)+1]] if galaxy.current == prev_galaxy.next]
+            if check and len(galaxies) == 0:
+                print('lost galaxy')
             return galaxies
 
     # need to include tracing children, that's a thing right?

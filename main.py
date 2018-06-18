@@ -4,9 +4,10 @@ import redshift
 import snapshot
 import distance
 import present
+import plot_stats
 import pylab
 import init
-import numpy
+import numpy as np
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -89,7 +90,7 @@ if __name__ == '__main__':
                  'dm' : (8, r'\log M_{\rm DM}\, [\rm{M}_{\odot}]'),
                  'bh' : (9, r'\log M_{\rm BH}\, [\rm M_{\odot}]'),
                  'gas' : (10, r'\log M_{\rm g}\, [\rm M_{\odot}]'),
-                 'acc' : (11, r'\log \dot{M}_{\rm{acc}}\, [\rm M_{{\sun}/yr}]'),
+                 'acc' : (11, r'\log \dot{M}_{\rm{acc}}\, [\rm M_{\odot}/yr]'),
                  'rho' : (12, r'\log \rho\, [\rm km/m^3]'),
                  'cond' : (12, r'\log \dot{M}_{\rm{acc}} / \rho \, [\rm M_{{\sun}/yr}^2 m^3/ km]'), # dodgey fix
                  None : (None, None)
@@ -123,28 +124,18 @@ if __name__ == '__main__':
         # filter out -inf
         if var == 9 or var == 11 or var == 12:
             galaxies = [i for i in galaxies if i != float('-inf')]
-        height, binedge = numpy.histogram(galaxies, bins = binnum)
+        height, binedge = np.histogram(galaxies, bins = binnum)
         binwidth = (max(galaxies) - min(galaxies))/binnum
-        error = [numpy.sqrt(i) for i in height]
+        error = [np.sqrt(i) for i in height]
         plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
         if options.stats:
-            # calculates a lot of stats
-            mean = numpy.mean(galaxies)
-            median = numpy.median(galaxies)
-            std = numpy.std(galaxies)
-            skew = stats.skew(galaxies, bias = False)
-            kurt = stats.kurtosis(galaxies)
-            figure_text = "$\\langle " + name + " \\rangle: " + str(round_sf(mean, 3)) + "$\n$" + "\\sigma: " + str(round_sf(std, 3)) + '$\n$' + "\\mathcal{S}: " + str(round_sf(skew, 3)) + '$\n$' + "\\mathcal{K} : " + str(round_sf(kurt, 3)) + "$"
-            plt.figtext(0.59, 0.68, figure_text, bbox = {'facecolor':'white'}, size = "large")
-            print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
-            x = numpy.arange(min(galaxies), max(galaxies), 0.001)
-            plt.plot(x, len(galaxies)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
+            plot_stats.gaussian(galaxies)
         pylab.xlabel('$' + name + '$', size = 15)
         pylab.ylabel(r'$N$', size = 15)
         pylab.xticks(size = 15)
         pylab.yticks(size = 15)
         if options.file:
-            plt.savefig('../report/' + fname + '_' + options.data + f2 + '.eps', format = 'eps')
+            plt.savefig('../report/' + fname + '_' + options.data + options.file + '.eps', format = 'eps')
         else:
             plt.savefig('../report/' + fname + '_' + options.data + '.eps', format = 'eps')
 
@@ -195,7 +186,7 @@ if __name__ == '__main__':
             pylab.scatter(xaxis, yaxis, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
             if options.stats:
                 # bin values using a dictionary
-                _, binedge = numpy.histogram(xaxis, bins = binnum)
+                _, binedge = np.histogram(xaxis, bins = binnum)
                 bin_dict = defaultdict(lambda: [])
                 for i in list(zip(xaxis, yaxis)):
                     bin_mid, val = [((a+b)/2, i[1]) for (a, b) in list(zip(binedge, binedge[1:])) if a <= i[0] <= b][0]
@@ -208,9 +199,9 @@ if __name__ == '__main__':
                     # only extend the mean lines if there are more than 30 data points
                     if len(vals) >= 30:
                         x_mid.append(i)
-                        l.append(numpy.percentile(vals, 16))
-                        m.append(numpy.percentile(vals, 50))
-                        u.append(numpy.percentile(vals, 84))
+                        l.append(np.percentile(vals, 16))
+                        m.append(np.percentile(vals, 50))
+                        u.append(np.percentile(vals, 84))
                 # plot
                 pylab.plot(x_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
                 pylab.plot(x_mid, m, label = 'mean', color = 'black', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
@@ -220,7 +211,7 @@ if __name__ == '__main__':
             pylab.xticks(size = 15)
             pylab.yticks(size = 15)
             if options.file:
-                plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + f2 + '.eps', format = 'eps')
+                plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + options.file + '.eps', format = 'eps')
             else:
                 plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + '.eps', format = 'eps')
 
@@ -255,7 +246,7 @@ if __name__ == '__main__':
             pylab.xticks(size = 15)
             pylab.yticks(size = 15)
             if options.file:
-                plt.savefig('../report/' + fname + '_s5' + f2 + '.eps', format = 'eps')
+                plt.savefig('../report/' + fname + '_s5' + options.file + '.eps', format = 'eps')
             else:
                 plt.savefig('../report/' + fname + '_s5' + '.eps', format = 'eps')
 
@@ -263,29 +254,20 @@ if __name__ == '__main__':
         else:
             # if black holes, filter out -inf
             if var == 9 or var == 11 or var == 12:
-                res = [g for g in res if g != float('-inf') and not numpy.isnan(g)]
-            height, binedge = numpy.histogram(res, bins = binnum)
+                res = [g for g in res if g != float('-inf') and not np.isnan(g)]
+            height, binedge = np.histogram(res, bins = binnum)
             binwidth = (max(res) - min(res))/binnum
-            error = [numpy.sqrt(i) for i in height]
+            error = [np.sqrt(i) for i in height]
             plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
             if options.stats:
                 # calculates a lot of stats
-                mean = numpy.mean(res)
-                median = numpy.median(res)
-                std = numpy.std(res)
-                skew = stats.skew(res)
-                kurt = stats.kurtosis(res)
-                figure_text = "$\\langle " + name + " \\rangle: " + str(round_sf(mean, 3)) + "$\n$" + "\\sigma: " + str(round_sf(std, 3)) + '$\n$' + "\\mathcal{S}: " + str(round_sf(skew, 3)) + '$\n$' + "\\mathcal{K} : " + str(round_sf(kurt, 3)) + "$"
-                plt.figtext(0.15, 0.68, figure_text, bbox = {'facecolor':'white'}, size = 'x-large')
-                print('mean: ' + str(mean) + '\n' + 'median: ' + str(median) + '\n' + 'standard deviation: ' + str(std) + '\n' + 'skewness: ' + str(skew) + '\n' + 'kurtosis: ' + str(kurt))
-                x = numpy.arange(min(res), max(res), 0.001)
-                plt.plot(x, len(res)*binwidth*stats.norm.pdf(x, mean, std), color = 'black')
+                plot_stats.gaussian(res)
             pylab.xlabel("$" + name + "$", size = 15)
             pylab.ylabel(r'$N$', size = 15)
             pylab.xticks(size = 15)
             pylab.yticks(size = 15)
             pylab.show()
             if options.file:
-                plt.savefig('../report/' + fname + '_' + options.data + f2 + '.eps', format = 'eps')
+                plt.savefig('../report/' + fname + '_' + options.data + options.file + '.eps', format = 'eps')
             else:
                 plt.savefig('../report/' + fname + '_' + options.data + '.eps', format = 'eps')
