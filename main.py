@@ -86,12 +86,11 @@ if __name__ == '__main__':
                  'ycoord' : (5, 'y-coordinates'),
                  'zcoord' : (6, 'z-coordinates'),
                  'stellar' : (7, r'\log M_{*}\, [\rm{M}_{\odot}]'),
-                 'dm' : (8, r'\log M_{\rm DM}\, [\rm{M}_{\odot}]'),
-                 'bh' : (9, r'\log M_{\rm BH}\, [\rm M_{\odot}]'),
-                 'gas' : (10, r'\log M_{\rm g}\, [\rm M_{\odot}]'),
+                 'dm' : (8, r'\log M_{\rm{DM}}^{\rm{BH5}}\, [\rm{M}_{\odot}]'),
+                 'bh' : (9, r'\log M_{\rm{BH}}^{\rm{DM10}}\, [\rm M_{\odot}]'),
+                 'gas' : (10, r'\log M_{\rm{gas}}^{\rm{DM10}}\, [\rm M_{\odot}]'),
                  'acc' : (11, r'\log \dot{M}_{\rm{acc}}\, [\rm M_{\odot}/yr]'),
                  'rho' : (12, r'\log \rho\, [\rm km/m^3]'),
-                 'cond' : (12, r'\log \dot{M}_{\rm{acc}} / \rho \, [\rm M_{{\sun}/yr}^2 m^3/ km]'), # dodgey fix
                  None : (None, None)
             }
     var, name = vartable[options.data]
@@ -174,11 +173,13 @@ if __name__ == '__main__':
             else:
                 yaxis = [g[1][yvar] for g in galaxies2]
             # black holes can have mass of -inf
-            if xvar == 9 or xvar == 11 or xavr == 12:
+            if xvar == 9 or xvar == 11 or xvar == 12:
                 xaxis,yaxis = zip(*[(x, y) for (x, y) in zip(xaxis, yaxis) if x != float('-inf')])
             if yvar == 9 or yvar == 11 or yvar == 12:
                 xaxis,yaxis = zip(*[(x, y) for (x, y) in zip(xaxis, yaxis) if y != float('-inf')])
-            pylab.scatter(xaxis, yaxis, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
+            pylab.scatter(xaxis, yaxis, color = 'black', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
+            # pretty plots
+            size = 15
             if options.stats:
                 # bin values using a dictionary
                 _, binedge = np.histogram(xaxis, bins = binnum)
@@ -198,17 +199,26 @@ if __name__ == '__main__':
                         m.append(np.percentile(vals, 50))
                         u.append(np.percentile(vals, 84))
                 # plot
-                pylab.plot(x_mid, l, label = '16th percentile', color = 'black', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
-                pylab.plot(x_mid, m, label = 'mean', color = 'black', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
-                pylab.plot(x_mid, u, label = '84th percentile', color = 'black', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
-            pylab.xlabel('$' + xname + '$', size = 15)
-            pylab.ylabel('$' + yname + '$', size = 15)
+                pylab.plot(x_mid, l, label = '16th percentile', color = 'red', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
+                pylab.plot(x_mid, m, label = 'mean', color = 'red', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
+                pylab.plot(x_mid, u, label = '84th percentile', color = 'red', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
+                # if scatter plot, make the size of the font bigger because need pretty plots...
+                size = 25
+            # Phil's stupid demands
+            if options.blackhole:
+                pylab.xlabel('$' + xname + '^{\\rm{BH5}}' + '$', size = size)
+            elif options.darkmatter:
+                pylab.xlabel('$' + xname + '^{\\rm{DM10}}' + '$', size = size)
+            else:
+                pylab.xlabel('$' + xname + '$', size = size)
+            pylab.ylabel('$' + yname + '$', size = size)
             pylab.xticks(size = 15)
             pylab.yticks(size = 15)
+            pylab.tight_layout()
             if options.file:
-                plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + options.file + '.eps', format = 'eps')
+                plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + options.file + '.eps', format = 'eps', bbox = 'tight')
             else:
-                plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + '.eps', format = 'eps')
+                plt.savefig('../report/' + fname + '_' + options.xaxis + '_' + options.yaxis + '.eps', format = 'eps', bbox = 'tight')
 
         # produces s5 scatter plots
         elif options.s5:
@@ -235,7 +245,7 @@ if __name__ == '__main__':
                 s5 = [d[1] for d in data]
                 mass_object = [d[0] for d in data]
             # plot
-            pylab.scatter(mass_object, s5, color = 'b', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
+            pylab.scatter(mass_object, s5, color = 'black', marker = 'o', s = 16, alpha = 0.3, edgecolors = 'none')
             pylab.xlabel('$' + name + '$', size = 15)
             pylab.ylabel(r'$s_5$', size = 15)
             pylab.xticks(size = 15)
@@ -256,12 +266,25 @@ if __name__ == '__main__':
             plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
             if options.stats:
                 # calculates a lot of stats
+                # filter out the resolution limit and satellite galaxies for the main file, I hope this doesn't catch anything it's not supposed to
+                if options.blackhole and options.data == 'dm':
+                    res = [g for g in res if 8 < g < 12]
                 plot_stats.gaussian(res, name, binwidth)
-            pylab.xlabel("$" + name + "$", size = 15)
+            # make graphs with pretty labels... thanks Phil
+            if options.blackhole and name == 'z':
+                pylab.xlabel("$" + name + "^{\\rm{BH5}}" + "$", size = 15)
+            elif options.darkmatter and name == 'z':
+                pylab.xlabel("$" + name + "^{\\rm{DM10}}" + "$", size = 15)
+            else:
+                pylab.xlabel("$" + name + "$", size = 15)
             pylab.ylabel(r'$N$', size = 15)
             pylab.xticks(size = 15)
             pylab.yticks(size = 15)
-            pylab.show()
+            # set same limits for plots in paper...
+            if options.blackhole and options.data == 'dm':
+                pylab.xlim(6.5, 14.5)
+            if options.darkmatter and options.data == 'bh':
+                pylab.xlim(2.9, 7.7)
             if options.file:
                 plt.savefig('../report/' + fname + '_' + options.data + options.file + '.eps', format = 'eps')
             else:

@@ -1,3 +1,7 @@
 *.pyc
 *.txt
 *.dat
+M200/*
+test.py
+*data*
+__pycache__

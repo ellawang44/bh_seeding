@@ -7,11 +7,11 @@ class History (GalaxyData):
         if key == keys[-1]:
             return None
         else:
-            prev_galaxy = [prev_galaxy for prev_galaxy in self.read_data.galaxy_data[keys[keys.index(key)+1]] if galaxy.previous == prev_galaxy.current]
-            if prev_galaxy == []:
+            prev_galaxys = [prev_galaxy for prev_galaxy in self.read_data.galaxy_data[keys[keys.index(key)+1]] if galaxy.previous == prev_galaxy.current]
+            if prev_galaxys == []:
                 return None
             else:
-                return prev_galaxy[0]
+                return prev_galaxys[0]
 
     def m_evolution(self, key, galaxy, threshold, var):
         # traces the evolution of 1 galaxy only. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
@@ -53,7 +53,6 @@ class History (GalaxyData):
     def preimage(self, key, galaxy, check = False):
         # get previous galaxies that are the pre image of the input galaxy
         keys = self.read_data.list_of_keys
-        print(keys[-1])
         if key == keys[-1]:
             return []
         else:
@@ -63,7 +62,6 @@ class History (GalaxyData):
                 print('lost galaxy')
             return galaxies
 
-    # need to include tracing children, that's a thing right?
     def evolution(self, key, galaxy, prev_evo):
         # traces the history of a galaxy. It will return a list of tuples where each tuple describes the galaxy at a different snapshot in reverse chronological order
         keys = self.read_data.list_of_keys

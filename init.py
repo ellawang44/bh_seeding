@@ -16,4 +16,4 @@ yaxis = None
 
 # other things? I need a better comment for this section
 print_file = False
-file_name = '_FOFseeding25240'
+file_name = '_M200_25mpc240'
