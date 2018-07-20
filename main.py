@@ -21,6 +21,7 @@ rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
+# um, don't ask...
 exec(b'\xe4\xb9\x87\xe4\xb9\x82\xe3\x84\x92\xe5\xb0\xba\xe5\x8d\x82\xe3\x84\x92\xe5\x8d\x84\xe4\xb8\xa8\xe5\x8c\x9a\xe5\x8c\x9a'.decode('utf-8') + ' = 3')
 
 parser = OptionParser()

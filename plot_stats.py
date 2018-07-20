@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 
-# define a sig fig rounding fuction
 def round_sf(x, n):
+    '''define a sig fig rounding fuction'''
     return float(('%.' + str(int(n)) + 'g') %  x)
 
 def gaussian(data, name, binwidth):
