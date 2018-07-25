@@ -2,6 +2,7 @@
 *.txt
 *.dat
 M200/*
-test.py
+test*.py
 *data*
 __pycache__
+compare.py
