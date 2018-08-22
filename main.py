@@ -27,8 +27,6 @@ exec(b'\xe4\xb9\x87\xe4\xb9\x82\xe3\x84\x92\xe5\xb0\xba\xe5\x8d\x82\xe3\x84\x92\
 parser = OptionParser()
 
 # ks test keromerogh's speamouth test?
-# Gaussian expansion including skewness and kurtosis
-
 
 # reading in different files
 parser.add_option('-f', '--file', type = 'string', dest = 'file', help = 'Determines the input file. Can also parse galaxy data.')
@@ -73,7 +71,6 @@ if __name__ == '__main__':
     # sets the correct file to read in
     if options.file:
         init.file_name = options.file
-        f2 = '_2'
 
     read_data = read.FileData(init.file_name)
     binnum = 100 # default number of bins
@@ -86,11 +83,11 @@ if __name__ == '__main__':
                  'xcoord' : (4, 'x-coordinates'),
                  'ycoord' : (5, 'y-coordinates'),
                  'zcoord' : (6, 'z-coordinates'),
-                 'stellar' : (7, r'\log M_{*}\, [\rm{M}_{\odot}]'),
-                 'dm' : (8, r'\log M_{\rm{DM}}^{\rm{BH5}}\, [\rm{M}_{\odot}]'),
-                 'bh' : (9, r'\log M_{\rm{BH}}^{\rm{DM10}}\, [\rm M_{\odot}]'),
-                 'gas' : (10, r'\log M_{\rm{gas}}^{\rm{DM10}}\, [\rm M_{\odot}]'),
-                 'acc' : (11, r'\log \dot{M}_{\rm{acc}}\, [\rm M_{\odot}/yr]'),
+                 'stellar' : (7, r'\log M_{*} h^{-1}\, [\rm{M}_{\odot}]'),
+                 'dm' : (8, r'\log M_{\rm{DM}}^{\rm{BH5}} \, h^{-1} [\rm{M}_{\odot}]'),
+                 'bh' : (9, r'\log M_{\rm{BH}}^{\rm{DM10}} \, h^{-1} [\rm{M}_{\odot}]'),
+                 'gas' : (10, r'\log M_{\rm{gas}}^{\rm{DM10}} \, h^{-1} [\rm{M}_{\odot}]'),
+                 'acc' : (11, r'\log \dot{M}_{\rm{acc}} \, h^{-1} [\rm{M}_{\odot}/yr]'),
                  'rho' : (12, r'\log \rho\, [\rm km/m^3]'),
                  None : (None, None)
             }
@@ -121,12 +118,14 @@ if __name__ == '__main__':
             galaxies = [i for i in galaxies if i != float('-inf')]
         height, binedge = np.histogram(galaxies, bins = binnum)
         binwidth = (max(galaxies) - min(galaxies))/binnum
-        error = [np.sqrt(i) for i in height]
+        factor = binwidth*len(galaxies)
+        error = [np.sqrt(i)/factor for i in height]
+        height = [i / factor for i in height]
         plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
         if options.stats:
-            plot_stats.gaussian(galaxies, name, binwidth)
+            plot_stats.pdf(galaxies, height, binedge, name, binwidth)
         pylab.xlabel('$' + name + '$', size = 15)
-        pylab.ylabel(r'$N$', size = 15)
+        pylab.ylabel(r'$\rho_{\rm{N}}$', size = 15)
         pylab.xticks(size = 15)
         pylab.yticks(size = 15)
         if options.file:
@@ -205,7 +204,7 @@ if __name__ == '__main__':
                 pylab.plot(x_mid, u, label = '84th percentile', color = 'red', linestyle = '--', alpha = 0.85, linewidth = 乇乂ㄒ尺卂ㄒ卄丨匚匚)
                 # if scatter plot, make the size of the font bigger because need pretty plots...
                 size = 25
-            # Phil's stupid demands
+            # Phil's demands
             if options.blackhole:
                 pylab.xlabel('$' + xname + '^{\\rm{BH5}}' + '$', size = size)
             elif options.darkmatter:
@@ -263,27 +262,39 @@ if __name__ == '__main__':
                 res = [g for g in res if g != float('-inf') and not np.isnan(g)]
             height, binedge = np.histogram(res, bins = binnum)
             binwidth = (max(res) - min(res))/binnum
-            error = [np.sqrt(i) for i in height]
+            binmid = [(a + b) / 2 for a, b in zip(binedge, binedge[1:])]
+            factor = binwidth*len(res)
+            error = [np.sqrt(i)/factor for i in height]
+            height = [i / factor for i in height]
             plt.bar(binedge[:-1], height, width = binwidth, align = 'edge', yerr = error, edgecolor = 'black', color = (0,0,0,0), linewidth = 1.5)
-            if options.stats:
-                # calculates a lot of stats
-                # filter out the resolution limit and satellite galaxies for the main file, I hope this doesn't catch anything it's not supposed to
+            if options.stats: # calculates a lot of stats
+                # filter out the resolution limit and satellite galaxies, I hope this doesn't catch anything it's not supposed to
                 if options.blackhole and options.data == 'dm':
                     res = [g for g in res if 8 < g < 12]
-                plot_stats.gaussian(res, name, binwidth)
-            # make graphs with pretty labels... thanks Phil
+                    height, binedge = np.histogram(res, bins = binnum)
+                    binwidth = (max(res) - min(res))/binnum
+                    binmid = [(a + b) / 2 for a, b in zip(binedge, binedge[1:])]
+                    factor = binwidth*len(res)
+                    height = [i / factor for i in height]
+                plot_stats.pdf(res, height, binmid, name, binwidth)
+            # name figures...
+            if init.file_name == '_M200_25mpc240':
+                plt.figtext(0.15, 0.83, 'TK-IC1', bbox = {'facecolor':'white'}, size = "large")
+            elif init.file_name == '_M200__test25240':
+                plt.figtext(0.15, 0.83, 'TK-IC2', bbox = {'facecolor':'white'}, size = "large")
+            # make graphs with pretty labels...
             if options.blackhole and name == 'z':
                 pylab.xlabel("$" + name + "^{\\rm{BH5}}" + "$", size = 15)
             elif options.darkmatter and name == 'z':
                 pylab.xlabel("$" + name + "^{\\rm{DM10}}" + "$", size = 15)
             else:
                 pylab.xlabel("$" + name + "$", size = 15)
-            pylab.ylabel(r'$N$', size = 15)
+            pylab.ylabel(r'$\rho_{\rm{N}}$', size = 15)
             pylab.xticks(size = 15)
             pylab.yticks(size = 15)
             # set same limits for plots in paper...
             if options.blackhole and options.data == 'dm':
-                pylab.xlim(6.5, 14.5)
+                pylab.xlim(6, 14.5)
             if options.darkmatter and options.data == 'bh':
                 pylab.xlim(2.9, 7.7)
             if options.file:

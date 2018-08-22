@@ -6,3 +6,4 @@ test*.py
 *data*
 __pycache__
 compare.py
+to_precision.py

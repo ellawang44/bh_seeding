@@ -1,4 +1,5 @@
 from collections import defaultdict, namedtuple
+import numpy as np
 
 # name tuple so we can refer to each bit of data by name instead of indexing
 key_naming = namedtuple('key_data', ['redshift', 'snapshot'])
@@ -33,16 +34,22 @@ class FileData:
         for line_h, line_t in zip(halo, tree):
             line_h = line_h.split()
             line_t = line_t.split()
-            data_h = tuple([float(i) for i in line_h])
             data_t = tuple([float(i) for i in line_t])
-            if len(data_h) == 2 and data_h == data_t:
+            if len(line_h) == 2 and tuple([float(i) for i in line_h]) == data_t:
                 # create new key,
-                current_key = data_h
+                current_key = tuple([float(i) for i in line_h])
                 list_of_keys.append(key_naming._make(current_key))
-            elif len(data_h) == 9 and len(data_t) == 4:
+            elif len(line_h) == 9 and len(data_t) == 4:
+                # pull h^-1 out from the raw inputs, where h = 0.7
+                data_h = tuple([float(i) for i in line_h[0:3]] # x, y, z location
+                               + [float(i) + np.log10(0.7) for i in line_h[3:8]]
+                               + [float(i) for i in line_h[8:]]) # density, doesn't have M_sun in it
                 # append new data to existing value in key
                 galaxy_data[current_key].append(galaxy_naming_long._make(data_t + data_h))
-            elif len(data_h) == 7 and len(data_t) == 4:
+            elif len(line_h) == 7 and len(data_t) == 4:
+                # pull h^-1 out from the raw inputs, where h = 0.7
+                data_h = tuple([float(i) for i in line_h[0:3]] # x, y, z location
+                               + [float(i) + np.log10(0.7) for i in line_h[3:]])
                 # append new data to existing value in key
                 galaxy_data[current_key].append(galaxy_naming_short._make(data_t + data_h))
             else:
