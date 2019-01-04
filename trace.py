@@ -46,7 +46,7 @@ class Trace (GalaxyData):
                     if prev_galaxy is not None and prev_galaxy[var] < obj < galaxy[var]:
                         objects.append((key, galaxy))
                         if init.print_file:
-                            f.write(str(int(key.snapshot)) + ' \t ' + str(int(galaxy.current)) + ' \n')
+                            f.write(str(int(key.snapshot)) + ' \t ' + str(int(galaxy.current)) + '\t' + str(galaxy.dark_matter_mass) + ' \n')
         else:
             for galaxy in self.read_data.galaxy_data[keys[0]]:
                 evos = hist.evolution(keys[0], galaxy, [])
@@ -57,7 +57,7 @@ class Trace (GalaxyData):
                     for fra in frames:
                         objects.append(fra)
                         if init.print_file:
-                            f.write(str(int(fra[0].snapshot)) + '\t' + str(int(fra[1].current)) + '\n')
+                            f.write(str(int(fra[0].snapshot)) + '\t' + str(int(fra[1].current)) + '\t' + str(fra[1].dark_matter_mass) + '\n')
 
         # gotta close the file so Probie's computer (and Windows) doesn't get annoyed
         if init.print_file:
